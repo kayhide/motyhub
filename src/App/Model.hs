@@ -6,11 +6,10 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Model where
+module App.Model where
 
 import Data.Text (Text)
 import Data.Time (UTCTime)
-import Data.Typeable (Typeable)
 import Database.Persist.TH
 
 share
@@ -27,6 +26,5 @@ Blog json sql=blogs
 
   deriving Eq
   deriving Show
-  deriving Typeable
   |]
 

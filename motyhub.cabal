@@ -15,8 +15,13 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     App
-                     , Model
+  exposed-modules:     Lib.Db
+                     , App.Prelude
+                     , App.Config
+                     , App.Route
+                     , App.Model
+                     , App.Monad.Operable
+                     , App
   build-depends:       base >= 4.7 && < 5
                      , text
                      , time
