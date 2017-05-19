@@ -1,0 +1,21 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: 5
+
+local: &local
+  username: motyhub
+  password:
+
+development: &development
+  <<: *default
+  <<: *local
+  database: motyhub_development
+
+test:
+  <<: *default
+  <<: *local
+  database: motyhub_test
+
+production:
+  <<: *default
