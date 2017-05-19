@@ -22,7 +22,7 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader
        (MonadReader, ReaderT(ReaderT), reader, runReaderT)
 import Control.Natural ((:~>)(NT))
-import Database.Persist (Entity(entityVal), insert_, selectList)
+import Database.Persist (Entity (..), insert, selectList)
 import Network.Wai
 import Network.Wai.Handler.Warp
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
@@ -53,17 +53,17 @@ server :: ServerT API Operable
 server = indexBlogs :<|> createBlog
 
 
-indexBlogs :: Operable [Blog]
+indexBlogs :: Operable [Entity Blog]
 indexBlogs = do
   blogs <- runDb $ selectList [] []
-  return $ entityVal <$> blogs
+  return $ blogs
 
-createBlog :: Operable Blog
+createBlog :: Operable (Entity Blog)
 createBlog = do
   now <- liftIO getCurrentTime
   let blog = Blog "http://hoge.host/host" "tamura" "secret" "http://somewhere.com/" "Something" now now
-  key <- runDb $ insert_ blog
-  return blog
+  key <- runDb $ insert blog
+  return $ Entity key blog
 
 
 startApp :: IO ()
