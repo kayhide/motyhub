@@ -14,6 +14,7 @@ module App
     , app
     ) where
 
+import Data.Maybe
 import Data.Time
 import Data.Monoid
 import Data.Proxy
@@ -22,6 +23,7 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader
        (MonadReader, ReaderT(ReaderT), reader, runReaderT)
 import Control.Natural ((:~>)(NT))
+import Control.Lens
 import Database.Persist (Entity (..), insert, selectList)
 import Network.Wai
 import Network.Wai.Handler.Warp
@@ -29,7 +31,10 @@ import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import Servant
 
 import Lib.Db as Db
+import Lib.Config as Config
 import App.Config
+import App.Config.Application
+import App.Config.Db
 import App.Route
 import App.Model
 
@@ -65,13 +70,17 @@ createBlog = do
   key <- runDb $ insert blog
   return $ Entity key blog
 
-
 startApp :: IO ()
 startApp = do
-  let url = "postgres://motyhub@localhost/motyhub_development"
-      port = 8080
-  connPool <- Db.makePoolFromUrl 5 url
-  let config = Config connPool port
+  applicationSetting <- Config.current :: IO ApplicationSetting
+  applicationRunning <- Config.initialize applicationSetting
+  dbSetting <- Config.current :: IO DbSetting
+  dbRunning <- Config.initialize dbSetting
+  let
+    port = applicationRunningPort applicationRunning
+    config = Config
+      (FullSetting applicationSetting dbSetting)
+      (FullRunning applicationRunning dbRunning)
   putStrLn $
     "running motyhub on port " <> show port <> "..."
 

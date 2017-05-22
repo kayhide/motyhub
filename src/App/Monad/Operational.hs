@@ -14,11 +14,13 @@ import Control.Monad.Reader
        (MonadReader, ReaderT(ReaderT), reader, runReaderT)
 import Control.Monad.Trans.Control
        (MonadBaseControl(StM, liftBaseWith, restoreM))
-import Control.Natural ((:~>)(NT))
+import Control.Lens
 import Database.Persist.Sql
 import Servant
 
-import App.Config
+import App.Config (Config(..))
+import qualified App.Config as Config
+import qualified App.Config.Db as Config
 
 newtype Operational a = Operational
   { unOperational :: ReaderT Config (ExceptT ServantErr IO) a
@@ -55,5 +57,5 @@ instance MonadBaseControl IO Operational where
 -- | Run a Persistent query.
 runDb :: ReaderT SqlBackend Operational a -> Operational a
 runDb query = do
-  pool <- reader configPool
+  pool <- reader $ (Config.dbRunningPool . Config.fullRunningDb . Config.configRunning)
   runSqlPool query pool
