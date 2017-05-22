@@ -34,7 +34,7 @@ import App.Route
 import App.Model
 
 import App.Prelude
-import App.Monad.Operable
+import App.Monad.Operational
 
 app :: Config -> Application
 app config = serve (Proxy :: Proxy API) apiServer
@@ -42,23 +42,23 @@ app config = serve (Proxy :: Proxy API) apiServer
     apiServer :: Server API
     apiServer = enter naturalTrans server
 
-    naturalTrans :: Operable :~> Handler
+    naturalTrans :: Operational :~> Handler
     naturalTrans = NT transformation
 
-    transformation :: forall a . Operable a -> Handler a
-    transformation = Handler . flip runReaderT config . unOperatable
+    transformation :: forall a . Operational a -> Handler a
+    transformation = Handler . flip runReaderT config . unOperational
 
 
-server :: ServerT API Operable
+server :: ServerT API Operational
 server = indexBlogs :<|> createBlog
 
 
-indexBlogs :: Operable [Entity Blog]
+indexBlogs :: Operational [Entity Blog]
 indexBlogs = do
   blogs <- runDb $ selectList [] []
   return $ blogs
 
-createBlog :: Operable (Entity Blog)
+createBlog :: Operational (Entity Blog)
 createBlog = do
   now <- liftIO getCurrentTime
   let blog = Blog "http://hoge.host/host" "tamura" "secret" "http://somewhere.com/" "Something" now now

@@ -4,7 +4,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module App.Monad.Operable where
+module App.Monad.Operational where
 
 import Control.Monad.Base
 import Control.Monad.Except (ExceptT(ExceptT), MonadError, runExceptT)
@@ -20,8 +20,8 @@ import Servant
 
 import App.Config
 
-newtype Operable a = Operable
-  { unOperatable :: ReaderT Config (ExceptT ServantErr IO) a
+newtype Operational a = Operational
+  { unOperational :: ReaderT Config (ExceptT ServantErr IO) a
   } deriving ( Functor
              , Applicative
              , Monad
@@ -32,28 +32,28 @@ newtype Operable a = Operable
              )
 
 
--- | The 'MonadBaseControl' instance for 'Operable' is required for using
+-- | The 'MonadBaseControl' instance for 'Operational' is required for using
 -- 'runSqlPool' in 'runDb'.  It is somewhat complicated and can safely be
 -- ignored if you've never seen it before.
-instance MonadBaseControl IO Operable where
-  type StM Operable a = Either ServantErr a
+instance MonadBaseControl IO Operational where
+  type StM Operational a = Either ServantErr a
 
   liftBaseWith
     :: forall a.
-       ((forall x. Operable x -> IO (Either ServantErr x)) -> IO a) -> Operable a
+       ((forall x. Operational x -> IO (Either ServantErr x)) -> IO a) -> Operational a
   liftBaseWith f =
-    Operable $
+    Operational $
     ReaderT $ \r ->
       ExceptT $
       fmap Right $
-      f $ \(Operable readerTExceptT) -> runExceptT $ runReaderT readerTExceptT r
+      f $ \(Operational readerTExceptT) -> runExceptT $ runReaderT readerTExceptT r
 
-  restoreM :: forall a. Either ServantErr a -> Operable a
-  restoreM eitherA = Operable . ReaderT . const . ExceptT $ pure eitherA
+  restoreM :: forall a. Either ServantErr a -> Operational a
+  restoreM eitherA = Operational . ReaderT . const . ExceptT $ pure eitherA
 
 
 -- | Run a Persistent query.
-runDb :: ReaderT SqlBackend Operable a -> Operable a
+runDb :: ReaderT SqlBackend Operational a -> Operational a
 runDb query = do
   pool <- reader configPool
   runSqlPool query pool
