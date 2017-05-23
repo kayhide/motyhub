@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -10,10 +11,19 @@ module App.Model where
 
 import Data.Text (Text)
 import Data.Time (UTCTime)
+import Data.Default
+import Control.Lens
+import Database.Persist.TH
+import Database.Persist.Relational (mkHrrInstances)
 import Database.Persist.TH
 
+import App.Prelude
+
 share
-  [mkPersist sqlSettings]
+  [mkPersist sqlSettings
+  , mkSave "entityDefs"
+  , mkHrrInstances
+  ]
   [persistLowerCase|
 Blog json sql=blogs
   hostUrl  Text sql=host_url
@@ -28,3 +38,11 @@ Blog json sql=blogs
   deriving Show
   |]
 
+makeFields ''Blog
+
+
+instance Default BlogId where
+  def = BlogKey 0
+
+instance Default Blog where
+  def = Blog def def def def def def def

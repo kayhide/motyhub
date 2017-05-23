@@ -17,14 +17,20 @@ library
   hs-source-dirs:      src
   exposed-modules:     Lib.Db
                      , Lib.Config
+                     , Lib.Operation
                      , App.Prelude
+                     , App.Orphan
                      , App.Config
                      , App.Config.Application
                      , App.Config.Db
                      , App.Route
                      , App.Model
-                     , App.Monad.Operational
+                     , App.Monad.Handleable
+                     , App.Concept.Blog
+                     , App.Concept.Blog.Operation
+                     , App.Concept.Blog.Handler
                      , App
+                     , Dev
   build-depends:       base >= 4.7 && < 5
                      , text
                      , bytestring
@@ -41,9 +47,16 @@ library
                      , natural-transformation
                      , monad-control
                      , monad-logger
+                     , exceptions
+                     , resourcet
+                     , conduit
                      , persistent
                      , persistent-postgresql
                      , persistent-template
+                     , persistent-relational-record
+                     , relational-query
+                     , persistable-record
+                     , sql-words
                      , transformers-base
                      , servant-server
                      , wai
