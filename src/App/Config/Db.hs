@@ -88,7 +88,7 @@ instance Configurable DbConfig where
       }
 
 configFile :: FilePath
-configFile = "db" </> "config.yaml"
+configFile = "config" </> "db.yaml"
 
 buildConnectionInfo :: Setting DbConfig -> Text
 buildConnectionInfo conf = fromMaybe info $ dbSettingUrl conf
