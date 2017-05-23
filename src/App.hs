@@ -11,7 +11,7 @@
 
 module App
     ( startApp
-    , app
+    , makeApp
     ) where
 
 import Data.Maybe
@@ -35,8 +35,8 @@ import App.Route
 import App.Monad.Handleable
 import qualified App.Concept.Blog.Handler as Blog
 
-app :: Config -> Application
-app config = serve (Proxy :: Proxy API) apiServer
+makeApp :: Config -> Application
+makeApp config = serve (Proxy :: Proxy API) apiServer
   where
     apiServer :: Server API
     apiServer = enter naturalTrans server
@@ -64,4 +64,4 @@ startApp = do
   putStrLn $
     "running motyhub on port " <> show port <> "..."
 
-  run port . logStdoutDev $ app config
+  run port . logStdoutDev $ makeApp config
