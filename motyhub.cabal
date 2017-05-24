@@ -27,6 +27,7 @@ library
                      , App.Model
                      , App.Monad.Handleable
                      , App.Concept.Blog
+                     , App.Concept.Blog.Serializer
                      , App.Concept.Blog.Operation
                      , App.Concept.Blog.Handler
                      , App
@@ -34,6 +35,7 @@ library
   build-depends:       base >= 4.7 && < 5
                      , text
                      , bytestring
+                     , inflections
                      , containers
                      , time
                      , data-default

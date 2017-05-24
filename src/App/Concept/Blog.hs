@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -8,6 +9,7 @@ import Data.Text (Text)
 import Data.Time.Clock (UTCTime)
 import Database.Persist.Relational
 import Database.Relational.Query
+import GHC.Generics
 
 import App.Model
 

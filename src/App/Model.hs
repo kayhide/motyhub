@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GADTs #-}
@@ -16,6 +17,7 @@ import Control.Lens
 import Database.Persist.TH
 import Database.Persist.Relational (mkHrrInstances)
 import Database.Persist.TH
+import GHC.Generics
 
 import App.Prelude
 
@@ -25,7 +27,7 @@ share
   , mkHrrInstances
   ]
   [persistLowerCase|
-Blog json sql=blogs
+Blog sql=blogs
   hostUrl  Text sql=host_url
   username Text
   password Text
@@ -36,6 +38,7 @@ Blog json sql=blogs
 
   deriving Eq
   deriving Show
+  deriving Generic
   |]
 
 makeFields ''Blog

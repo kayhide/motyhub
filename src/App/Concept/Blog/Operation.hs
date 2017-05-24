@@ -4,7 +4,7 @@
 
 module App.Concept.Blog.Operation where
 
-import Prelude hiding (all, last)
+import Prelude hiding (all, lookup, last)
 import Data.Maybe
 import Data.Time
 import Data.Text (Text)
@@ -35,10 +35,11 @@ all = runResourceT $ runQuery (relationalQuery rel) () $$ CL.consume
       asc $ u ! Blog.id'
       return u
 
+lookup :: BlogId -> Operational (Maybe (Entity Blog))
+lookup key = runResourceT $ runQuery Blog.selectBlogs key $$ CL.head
+
 find :: BlogId -> Operational (Entity Blog)
-find key = do
-  Just user <- runResourceT $ runQuery Blog.selectBlogs key $$ CL.head
-  return $ user
+find key = fromJust <$> lookup key
 
 create :: [Update Blog] -> Operational (Entity Blog)
 create updates = do
