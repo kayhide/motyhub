@@ -17,6 +17,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Lib.Db
                      , Lib.Config
+                     , Lib.Serializer
                      , Lib.Operation
                      , App.Prelude
                      , App.Orphan
@@ -30,6 +31,10 @@ library
                      , App.Concept.Blog.Serializer
                      , App.Concept.Blog.Operation
                      , App.Concept.Blog.Handler
+                     , App.Concept.Article
+                     , App.Concept.Article.Serializer
+                     , App.Concept.Article.Operation
+                     , App.Concept.Article.Handler
                      , App
                      , Dev
   build-depends:       base >= 4.7 && < 5

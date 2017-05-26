@@ -34,6 +34,7 @@ import App.Config.Db
 import App.Route
 import App.Monad.Handleable
 import qualified App.Concept.Blog.Handler as Blog
+import qualified App.Concept.Article.Handler as Article
 
 makeApp :: Config -> Application
 makeApp config = serve (Proxy :: Proxy API) apiServer
@@ -48,7 +49,7 @@ makeApp config = serve (Proxy :: Proxy API) apiServer
     transformation = Handler . flip runReaderT config . unHandleable
 
 server :: ServerT API Handleable
-server = Blog.handlers
+server = Blog.handlers :<|> Article.handlers
 
 startApp :: IO ()
 startApp = do

@@ -5,31 +5,22 @@ module App.Concept.Blog.Serializer
   (BlogForCreate(..), BlogForUpdate(..)
   ) where
 
-import Data.Either
-import Data.Monoid
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Aeson
-import Data.Aeson.Types
-import Text.Inflections
 import Database.Persist
 import GHC.Generics
 
+import Lib.Serializer
 import App.Model
 import qualified App.Concept.Blog as Blog
 
-labelModifier :: String -> String
-labelModifier src = either (const src) id $ do
-  words <- parseCamelCase [] $ Text.pack src
-  return $ Text.unpack $ underscore $ tail words
-
-options = defaultOptions { fieldLabelModifier = labelModifier }
 
 instance ToJSON Blog where
-  toJSON = genericToJSON options
+  toJSON = genericToJSON jsonOptions
 
 instance FromJSON Blog where
-  parseJSON = genericParseJSON options
+  parseJSON = genericParseJSON jsonOptions
 
 instance ToJSON (Entity Blog) where
   toJSON = entityIdToJSON
@@ -47,10 +38,10 @@ data BlogForCreate = BlogForCreate
   } deriving (Eq, Show, Generic)
 
 instance ToJSON BlogForCreate where
-  toJSON = genericToJSON options
+  toJSON = genericToJSON jsonOptions
 
 instance FromJSON BlogForCreate where
-  parseJSON = genericParseJSON options
+  parseJSON = genericParseJSON jsonOptions
 
 
 data BlogForUpdate = BlogForUpdate
@@ -62,7 +53,7 @@ data BlogForUpdate = BlogForUpdate
   } deriving (Eq, Show, Generic)
 
 instance ToJSON BlogForUpdate where
-  toJSON = genericToJSON options
+  toJSON = genericToJSON jsonOptions
 
 instance FromJSON BlogForUpdate where
-  parseJSON = genericParseJSON options
+  parseJSON = genericParseJSON jsonOptions
