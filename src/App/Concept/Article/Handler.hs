@@ -1,7 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module App.Concept.Article.Handler where
+module App.Concept.Article.Handler
+  ( handlers
+  ) where
 
 import Data.Maybe
 import Control.Monad
@@ -13,51 +15,40 @@ import App.Monad.Handleable
 import qualified App.Concept.Article.Operation as Article
 import App.Concept.Article.Serializer
 
+
 handlers blogId = index' blogId :<|> show' blogId :<|> create' blogId :<|> update' blogId :<|> destroy' blogId
-
-index' :: BlogId -> Handleable [Entity Article]
-index' blogId = operate Article.all
-
 
 verifyPresence :: Maybe a -> Handleable a
 verifyPresence (Just x) = return x
 verifyPresence Nothing  = throwError err404
 
+index' :: BlogId -> Handleable [Entity Article]
+index' blogId = operate Article.all
+
 show' :: BlogId -> ArticleId -> Handleable (Entity Article)
-show' blogId key = do
-  article' <- operate $ Article.lookup key
+show' blogId articleId = do
+  article' <- operate $ Article.lookup articleId
   verifyPresence article'
 
 create' :: BlogId -> ArticleForCreate -> Handleable (Entity Article)
-create' blogId (ArticleForCreate title body basename)
-  = operate $ Article.create updates
+create' blogId articleForCreate
+  = operate $ Article.create changeset
   where
-    updates = (ArticleBlogId =. blogId) : catMaybes
-      [ (ArticleTitle =.) <$> title
-      , (ArticleBody =.) <$> body
-      , (ArticleBasename =.) <$> basename
-      ]
+    changeset = (ArticleBlogId =. blogId) : toChangeset articleForCreate
 
 update' :: BlogId -> ArticleId -> ArticleForUpdate -> Handleable (Entity Article)
-update' _ key (ArticleForUpdate blogId title body basename)
-  = do
+update' _ articleId articleForUpdate = do
   article' <- operate $ do
-    article' <- Article.lookup key
-    mapM (Article.update updates) article'
+    article' <- Article.lookup articleId
+    mapM (Article.update changeset) article'
   verifyPresence article'
   where
-    updates = catMaybes
-      [ (ArticleBlogId =.) <$> blogId
-      , (ArticleTitle =.) <$> title
-      , (ArticleBody =.) <$> body
-      , (ArticleBasename =.) <$> basename
-      ]
+    changeset = toChangeset articleForUpdate
 
 destroy' :: BlogId -> ArticleId -> Handleable NoContent
-destroy' blogId key = do
+destroy' blogId articleId = do
   article' <- operate $ do
-    article' <- Article.lookup key
+    article' <- Article.lookup articleId
     mapM Article.destroy article'
-  case article' of
-    Just _  -> return NoContent
-    Nothing -> throwError err404
+  verifyPresence article'
+  return NoContent

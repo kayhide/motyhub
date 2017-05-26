@@ -1,7 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module App.Concept.Blog.Handler where
+module App.Concept.Blog.Handler
+  ( handlers
+  ) where
 
 import Data.Maybe
 import Control.Monad
@@ -13,53 +15,38 @@ import App.Monad.Handleable
 import qualified App.Concept.Blog.Operation as Blog
 import App.Concept.Blog.Serializer
 
+
 handlers = index' :<|> show' :<|> create' :<|> update' :<|> destroy'
+
+verifyPresence :: Maybe a -> Handleable a
+verifyPresence (Just x) = return x
+verifyPresence Nothing  = throwError err404
 
 index' :: Handleable [Entity Blog]
 index' = operate Blog.all
 
 show' :: BlogId -> Handleable (Entity Blog)
-show' key = do
-  blog' <- operate $ Blog.lookup key
-  case blog' of
-    Just blog -> return blog
-    Nothing   -> throwError err404
+show' blogId = do
+  blog' <- operate $ Blog.lookup blogId
+  verifyPresence blog'
 
 create' :: BlogForCreate -> Handleable (Entity Blog)
-create' (BlogForCreate hostUrl username password url title)
-  = operate $ Blog.create updates
-  where
-    updates = catMaybes
-      [ (BlogHostUrl =.) <$> hostUrl
-      , (BlogUsername =.) <$> username
-      , (BlogPassword =.) <$> password
-      , (BlogUrl =.) <$> url
-      , (BlogTitle =.) <$> title
-      ]
+create' blogForCreate
+  = operate $ Blog.create $ toChangeset blogForCreate
 
 update' :: BlogId -> BlogForUpdate -> Handleable (Entity Blog)
-update' key (BlogForUpdate hostUrl username password url title)
-  = do
+update' blogId blogForUpdate = do
   blog' <- operate $ do
-    blog' <- Blog.lookup key
-    mapM (Blog.update updates) blog'
-  case blog' of
-    Just blog -> return blog
-    Nothing   -> throwError err404
+    blog' <- Blog.lookup blogId
+    mapM (Blog.update changeset) blog'
+  verifyPresence blog'
   where
-    updates = catMaybes
-      [ (BlogHostUrl =.) <$> hostUrl
-      , (BlogUsername =.) <$> username
-      , (BlogPassword =.) <$> password
-      , (BlogUrl =.) <$> url
-      , (BlogTitle =.) <$> title
-      ]
+    changeset = toChangeset blogForUpdate
 
 destroy' :: BlogId -> Handleable NoContent
-destroy' key = do
+destroy' blogId = do
   blog' <- operate $ do
-    blog' <- Blog.lookup key
+    blog' <- Blog.lookup blogId
     mapM Blog.destroy blog'
-  case blog' of
-    Just _  -> return NoContent
-    Nothing -> throwError err404
+  verifyPresence blog'
+  return NoContent

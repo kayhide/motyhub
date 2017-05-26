@@ -1,10 +1,15 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module App.Concept.Article.Serializer
-  (ArticleForCreate(..), ArticleForUpdate(..)
+  ( ArticleForCreate(..)
+  , ArticleForUpdate(..)
+  , toChangeset
   ) where
 
+import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Aeson
@@ -41,6 +46,12 @@ instance ToJSON ArticleForCreate where
 instance FromJSON ArticleForCreate where
   parseJSON = genericParseJSON jsonOptions
 
+instance ToChangeset Article ArticleForCreate where
+  toChangeset ArticleForCreate {..} =
+    catMaybes [ (ArticleTitle =.) <$> articleforcreateTitle
+              , (ArticleBody =.) <$> articleforcreateBody
+              , (ArticleBasename =.) <$> articleforcreateBasename
+              ]
 
 data ArticleForUpdate = ArticleForUpdate
   { articleforupdateBlogId :: Maybe BlogId
@@ -54,3 +65,11 @@ instance ToJSON ArticleForUpdate where
 
 instance FromJSON ArticleForUpdate where
   parseJSON = genericParseJSON jsonOptions
+
+instance ToChangeset Article ArticleForUpdate where
+  toChangeset ArticleForUpdate {..} =
+    catMaybes [ (ArticleBlogId =.) <$> articleforupdateBlogId
+              , (ArticleTitle =.) <$> articleforupdateTitle
+              , (ArticleBody =.) <$> articleforupdateBody
+              , (ArticleBasename =.) <$> articleforupdateBasename
+              ]
