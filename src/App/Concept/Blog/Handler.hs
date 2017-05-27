@@ -38,7 +38,7 @@ update' :: BlogId -> BlogForUpdate -> Handleable (Entity Blog)
 update' blogId blogForUpdate = do
   blog' <- operate $ do
     blog' <- Blog.lookup blogId
-    mapM (Blog.update changeset) blog'
+    mapM (flip Blog.update changeset) blog'
   verifyPresence blog'
   where
     changeset = toChangeset blogForUpdate

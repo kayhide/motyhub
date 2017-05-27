@@ -23,7 +23,7 @@ verifyPresence (Just x) = return x
 verifyPresence Nothing  = throwError err404
 
 index' :: BlogId -> Handleable [Entity Article]
-index' blogId = operate Article.all
+index' blogId = operate $ Article.allOf blogId
 
 show' :: BlogId -> ArticleId -> Handleable (Entity Article)
 show' blogId articleId = do
@@ -40,7 +40,7 @@ update' :: BlogId -> ArticleId -> ArticleForUpdate -> Handleable (Entity Article
 update' _ articleId articleForUpdate = do
   article' <- operate $ do
     article' <- Article.lookup articleId
-    mapM (Article.update changeset) article'
+    mapM (flip Article.update changeset) article'
   verifyPresence article'
   where
     changeset = toChangeset articleForUpdate

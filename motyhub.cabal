@@ -18,6 +18,7 @@ library
   exposed-modules:     Lib.Db
                      , Lib.Config
                      , Lib.Serializer
+                     , Lib.Query
                      , Lib.Operation
                      , App.Prelude
                      , App.Orphan
