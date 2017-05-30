@@ -18,9 +18,6 @@ import App.Concept.Blog.Serializer
 
 handlers = index' :<|> show' :<|> create' :<|> update' :<|> destroy'
 
-verifyPresence :: Maybe a -> Handleable a
-verifyPresence (Just x) = return x
-verifyPresence Nothing  = throwError err404
 
 index' :: Handleable [Entity Blog]
 index' = operate Blog.all

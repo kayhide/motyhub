@@ -28,10 +28,6 @@ import qualified App.Concept.Blog as Blog
 import qualified App.Concept.Article as Article
 
 
-all_ :: MonadQuery m => m (Projection Flat Blog.Blogs)
-all_ = query Blog.blogs
-
-
 all :: Operational [Entity Blog]
 all = all_ >>= asc_ Blog.id' & takeAll
 
@@ -67,4 +63,9 @@ count :: Operational Int
 count = all_ >>= count_ Blog.id' & takeCounted
 
 
+all_ :: MonadQuery m => m (Projection Flat Blog.Blogs)
+all_ = query Blog.blogs
+
+articles_ :: (MonadQuery m, MonadRestrict Flat m)
+          => Entity Blog -> m (Projection Flat Article.Articles)
 articles_ (Entity blogId _) = query Article.articles >>= where_ Article.blogId' (.=.) blogId

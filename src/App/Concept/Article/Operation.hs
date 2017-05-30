@@ -29,15 +29,11 @@ import qualified App.Concept.Article as Article
 import qualified App.Concept.Blog as Blog
 
 
-all_ :: MonadQuery m => m (Projection Flat Article.Articles)
-all_ = query Article.articles
-
-
 all :: Operational [Entity Article]
 all = all_ >>= asc_ Article.id' & takeAll
 
 lookup :: ArticleId -> Operational (Maybe (Entity Article))
-lookup key = all_ >>= where_ Article.id' (.=.) key & takeOne
+lookup key = all_ >>= lookup_ key & takeOne
 
 find :: ArticleId -> Operational (Entity Article)
 find key = fromJust <$> lookup key
@@ -71,4 +67,17 @@ count = all_ >>= count_ Article.id' & takeCounted
 allOf :: BlogId -> Operational [Entity Article]
 allOf blogId = all_ >>= asc_ Article.id' >>= where_ Article.blogId' (.=.) blogId & takeAll
 
+lookupOf :: BlogId -> ArticleId -> Operational (Maybe (Entity Article))
+lookupOf blogId key = all_ >>= where_ Article.blogId' (.=.) blogId >>= lookup_ key & takeOne
+
+
+all_ :: MonadQuery m => m (Projection Flat Article.Articles)
+all_ = query Article.articles
+
+lookup_ :: MonadRestrict Flat m
+        => ArticleId -> Projection Flat Article.Articles -> m (Projection Flat Article.Articles)
+lookup_ key = where_ Article.id' (.=.) key
+
+blog_ :: (HasBlogId t BlogId, MonadRestrict Flat m, MonadQuery m)
+      => Entity t -> m (Projection Flat Blog.Blogs)
 blog_ (Entity _ record) = query Blog.blogs >>= where_ Blog.id' (.=.) (record ^. blogId)
