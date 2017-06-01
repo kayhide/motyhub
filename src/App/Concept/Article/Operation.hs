@@ -21,54 +21,54 @@ import qualified Database.Persist as Persist
 import Database.Persist.Relational
 import Database.Relational.Query
 
-import Lib.Db
-import Lib.Operation as Operation
+import Lib.Query
 
 import App.Model
 import qualified App.Concept.Article as Article
 import qualified App.Concept.Blog as Blog
+import App.Monad.Db as Db
 
 
-all :: Operational [Entity Article]
-all = all_ >>= asc_ Article.id' & takeAll
+all :: (MonadAppDb m) => m [Entity Article]
+all = all_ >>= asc_ Article.id' & Db.queryMany
 
-lookup :: ArticleId -> Operational (Maybe (Entity Article))
-lookup key = all_ >>= lookup_ key & takeOne
+lookup :: (MonadAppDb m) => ArticleId -> m (Maybe (Entity Article))
+lookup key = all_ >>= lookup_ key & Db.queryOne
 
-find :: ArticleId -> Operational (Entity Article)
+find :: (MonadAppDb m) => ArticleId -> m (Entity Article)
 find key = fromJust <$> lookup key
 
-create :: Changeset Article -> Operational (Entity Article)
+create :: (MonadAppDb m, MonadIO m) => Changeset Article -> m (Entity Article)
 create changeset = do
   now <- liftIO getCurrentTime
-  Operation.create $ changeset ++ [ArticleCreatedAt =. now, ArticleUpdatedAt =. now]
+  Db.create $ changeset ++ [ArticleCreatedAt =. now, ArticleUpdatedAt =. now]
 
-update :: (Entity Article) -> Changeset Article -> Operational (Entity Article)
+update :: (MonadAppDb m, MonadIO m) => (Entity Article) -> Changeset Article -> m (Entity Article)
 update article changeset = do
   now <- liftIO getCurrentTime
-  Operation.update article $ changeset ++ [ArticleUpdatedAt =. now]
+  Db.update article $ changeset ++ [ArticleUpdatedAt =. now]
 
-destroy :: (Entity Article) -> Operational ()
-destroy = Operation.destroy
+destroy :: (MonadAppDb m) => (Entity Article) -> m ()
+destroy = Db.destroy
 
-reload :: (Entity Article) -> Operational (Entity Article)
+reload :: (MonadAppDb m) => (Entity Article) -> m (Entity Article)
 reload (Entity key _) = find key
 
-first :: Operational (Maybe (Entity Article))
-first = all_ >>= asc_ Article.id' & takeOne
+first :: (MonadAppDb m) => m (Maybe (Entity Article))
+first = all_ >>= asc_ Article.id' & Db.queryOne
 
-last :: Operational (Maybe (Entity Article))
-last = all_ >>= desc_ Article.id' & takeOne
+last :: (MonadAppDb m) => m (Maybe (Entity Article))
+last = all_ >>= desc_ Article.id' & Db.queryOne
 
-count :: Operational Int
-count = all_ >>= count_ Article.id' & takeCounted
+count :: (MonadAppDb m) => m Int
+count = all_ >>= count_ Article.id' & Db.queryCounted
 
 
-allOf :: BlogId -> Operational [Entity Article]
-allOf blogId = all_ >>= asc_ Article.id' >>= where_ Article.blogId' (.=.) blogId & takeAll
+allOf :: (MonadAppDb m) => BlogId -> m [Entity Article]
+allOf blogId = all_ >>= asc_ Article.id' >>= where_ Article.blogId' (.=.) blogId & Db.queryMany
 
-lookupOf :: BlogId -> ArticleId -> Operational (Maybe (Entity Article))
-lookupOf blogId key = all_ >>= where_ Article.blogId' (.=.) blogId >>= lookup_ key & takeOne
+lookupOf :: (MonadAppDb m) => BlogId -> ArticleId -> m (Maybe (Entity Article))
+lookupOf blogId key = all_ >>= where_ Article.blogId' (.=.) blogId >>= lookup_ key & Db.queryOne
 
 
 all_ :: MonadQuery m => m (Projection Flat Article.Articles)

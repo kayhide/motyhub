@@ -23,6 +23,7 @@ import Lib.Operation
 import App.Config (Config(..))
 import qualified App.Config as Config
 import qualified App.Config.Db as Config
+import App.Monad.Db
 
 newtype Handleable a = Handleable
   { unHandleable :: ReaderT Config (ExceptT ServantErr IO) a
@@ -61,6 +62,9 @@ operate :: Operational a -> Handleable a
 operate op = do
   pool <- reader $ (Config.dbRunningPool . Config.fullRunningDb . Config.configRunning)
   runSqlPool op pool
+
+runDb :: AppDbT Handleable a -> Handleable a
+runDb = runAppDbT
 
 verifyPresence :: Maybe a -> Handleable a
 verifyPresence (Just x) = return x

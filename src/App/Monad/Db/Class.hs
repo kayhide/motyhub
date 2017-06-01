@@ -1,33 +1,118 @@
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module App.Monad.Db.Class where
 
+import Data.Maybe
+import Data.Default
 import Control.Monad.Trans (MonadTrans)
 import Database.Persist.Sql hiding (insert, update, delete)
-import qualified Database.Persist.Sql as Persist
 import Database.Persist.Relational
 import Database.Relational.Query hiding (Update, set)
 
 import App.Prelude
 
+type Changeset v = [Update v]
+
+class ( PersistEntityBackend record ~ SqlBackend
+      , PersistEntity record
+      ) => DbEntity record
+instance ( PersistEntityBackend record ~ SqlBackend
+         , PersistEntity record
+         ) => DbEntity record
+
 class Monad m => MonadAppDb m where
 
-  dbTakeAll
+  queryMany
     :: (ToPersistEntity a1 a)
-    => QuerySimple (Projection Flat a1)
-    -> m [a]
-
-  default dbTakeAll
-    :: ( MonadAppDb n
+    => QuerySimple (Projection Flat a1) -> m [a]
+  default queryMany
+    :: ( ToPersistEntity a1 a
+       , MonadAppDb n
        , MonadTrans t
        , m ~ t n
-       , ToPersistEntity a1 a)
-    => QuerySimple (Projection Flat a1)
-    -> t n [a]
+       )
+    => QuerySimple (Projection Flat a1) -> m [a]
+  queryMany = lift . queryMany
 
-  dbTakeAll = lift . dbTakeAll
+  queryOne
+    :: (ToPersistEntity a1 a)
+    => QuerySimple (Projection Flat a1) -> m (Maybe a)
+  default queryOne
+    :: ( ToPersistEntity a1 a
+       , MonadAppDb n
+       , MonadTrans t
+       , m ~ t n
+       )
+    => QuerySimple (Projection Flat a1) -> m (Maybe a)
+  queryOne = lift . queryOne
+
+  queryAggregated
+    :: (ToPersistEntity a1 a)
+    => QueryAggregate (Projection Aggregated a1) -> m (Maybe a)
+  default queryAggregated
+    :: ( ToPersistEntity a1 a
+       , MonadAppDb n
+       , MonadTrans t
+       , m ~ t n
+       )
+    => QueryAggregate (Projection Aggregated a1) -> m (Maybe a)
+  queryAggregated = lift . queryAggregated
+
+  queryCounted
+    :: (ToPersistEntity a1 a, a ~ Int)
+    => QueryAggregate (Projection Aggregated a1) -> m Int
+  queryCounted proj = fmap fromJust $ queryAggregated proj
+  -- default queryCounted
+  --   :: ( ToPersistEntity a1 a
+  --      , a ~ Int
+  --      , MonadAppDb n
+  --      , MonadTrans t
+  --      , m ~ t n
+  --      )
+  --   => QueryAggregate (Projection Aggregated a1) -> m Int
+  -- queryCounted = lift . queryCounted
+
+
+  create
+    :: (DbEntity record, Default record)
+    => Changeset record -> m (Entity record)
+  default create
+    :: ( DbEntity record
+       , Default record
+       , MonadAppDb n
+       , MonadTrans t
+       , m ~ t n
+       )
+    => Changeset record -> m (Entity record)
+  create = lift . create
+
+  update
+    :: (DbEntity record)
+    => Entity record -> Changeset record -> m (Entity record)
+  default update
+    :: ( DbEntity record
+       , MonadAppDb n
+       , MonadTrans t
+       , m ~ t n
+       )
+    => Entity record -> Changeset record -> m (Entity record)
+  update = (lift .) . update
+
+  destroy
+    :: (DbEntity record)
+    => Entity record -> m ()
+  default destroy
+    :: ( DbEntity record
+       , MonadAppDb n
+       , MonadTrans t
+       , m ~ t n
+       )
+    => Entity record -> m ()
+  destroy = lift . destroy
 
 
 instance MonadAppDb m => MonadAppDb (ReaderT r m)
