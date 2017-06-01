@@ -28,6 +28,10 @@ library
                      , App.Route
                      , App.Model
                      , App.Monad.Handleable
+                     , App.Monad.Db
+                     , App.Monad.Db.Class
+                     , App.Monad.Db.Instance
+                     , App.Monad.Db.Trans
                      , App.Concept.Blog
                      , App.Concept.Blog.Serializer
                      , App.Concept.Blog.Operation
@@ -51,6 +55,7 @@ library
                      , directory
                      , lens
                      , lens-aeson
+                     , transformers
                      , mtl
                      , natural-transformation
                      , monad-control

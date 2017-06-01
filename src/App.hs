@@ -5,6 +5,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
@@ -53,9 +54,9 @@ server = Blog.handlers :<|> Article.handlers
 
 startApp :: IO ()
 startApp = do
-  applicationSetting <- Config.current :: IO ApplicationSetting
+  applicationSetting :: ApplicationSetting <- Config.current
   applicationRunning <- Config.initialize applicationSetting
-  dbSetting <- Config.current :: IO DbSetting
+  dbSetting :: DbSetting <- Config.current
   dbRunning <- Config.initialize dbSetting
   let
     port = applicationRunningPort applicationRunning
