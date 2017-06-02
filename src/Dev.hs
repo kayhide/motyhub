@@ -30,7 +30,7 @@ import Database.Persist.Relational
 import Database.Relational.Query hiding (Config)
 
 import Lib.Config as Config
-import Lib.Operation
+import Lib.Query
 import App.Prelude
 import App.Config
 import App.Config.Application
@@ -41,20 +41,6 @@ import qualified App.Concept.Blog as Blog
 import qualified App.Concept.Blog.Operation as Blog
 import qualified App.Concept.Article as Article
 import qualified App.Concept.Article.Operation as Article
-
-run :: Operational a -> IO a
-run sql = do
-  dbSetting :: DbSetting <- Config.current
-  let info = Text.encodeUtf8 $ buildConnectionInfo dbSetting
-  runStderrLoggingT $ withPostgresqlConn info $ runSqlConn sql
-
-runRelation :: ToPersistEntity a1 a => Relation () a1 -> IO [a]
-runRelation rel = runRelationWith rel ()
-
-runRelationWith :: (ToSql PersistValue p, ToPersistEntity a1 a)
-                => Relation p a1 -> p -> IO [a]
-runRelationWith rel p = run $ runResourceT $ runQuery (relationalQuery rel) p $$ CL.consume
-
 
 
 newtype Dev a = Dev { unDev :: ReaderT Config IO a }
@@ -78,12 +64,9 @@ setup = do
   applicationRunning <- Config.initialize applicationSetting
   dbSetting :: DbSetting <- Config.current
   dbRunning <- Config.initialize dbSetting
-  let
-    port = applicationRunningPort applicationRunning
-    config = Config
+  return $ Config
       (FullSetting applicationSetting dbSetting)
       (FullRunning applicationRunning dbRunning)
-  return config
 
 runDb :: AppDbT Dev a -> IO a
 runDb sql = do

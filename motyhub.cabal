@@ -19,7 +19,6 @@ library
                      , Lib.Config
                      , Lib.Serializer
                      , Lib.Query
-                     , Lib.Operation
                      , App.Prelude
                      , App.Orphan
                      , App.Config

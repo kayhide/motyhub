@@ -19,7 +19,6 @@ import Control.Monad.Trans.Control
 import Database.Persist.Sql
 import Servant
 
-import Lib.Operation
 import App.Config (Config(..))
 import qualified App.Config as Config
 import qualified App.Config.Db as Config
@@ -57,11 +56,6 @@ instance MonadBaseControl IO Handleable where
   restoreM :: forall a. Either ServantErr a -> Handleable a
   restoreM eitherA = Handleable . ReaderT . const . ExceptT $ pure eitherA
 
-
-operate :: Operational a -> Handleable a
-operate op = do
-  pool <- reader $ (Config.dbRunningPool . Config.fullRunningDb . Config.configRunning)
-  runSqlPool op pool
 
 runDb :: AppDbT Handleable a -> Handleable a
 runDb = runAppDbT
