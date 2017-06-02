@@ -56,6 +56,15 @@ instance ( MonadIO m
     where
       rel = relation proj
 
+  querySome range proj = lift $ run' $ do
+    runResourceT $ runQuery (relationalQuery' rel (suffix range)) () $$ CL.consume
+    where
+      rel = relation proj
+      suffix (Limit limit) = [LIMIT, word (show limit)]
+      suffix (Offset offset) = ["OFFSET", word (show offset)]
+      suffix (LimitOffset limit offset) = [LIMIT, word (show limit), "OFFSET", word (show offset)]
+      suffix (PagePer page per) = [LIMIT, word (show per), "OFFSET", word (show (page * per))]
+
   queryOne proj = lift $ run' $ do
     runResourceT $ runQuery (relationalQuery' rel suffix) () $$ CL.head
     where

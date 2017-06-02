@@ -24,6 +24,8 @@ instance ( PersistEntityBackend record ~ SqlBackend
          , PersistEntity record
          ) => DbEntity record
 
+data QueryRange = Limit Int | Offset Int | LimitOffset Int Int | PagePer Int Int
+
 class Monad m => MonadAppDb m where
 
   queryMany
@@ -37,6 +39,18 @@ class Monad m => MonadAppDb m where
        )
     => QuerySimple (Projection Flat a1) -> m [a]
   queryMany = lift . queryMany
+
+  querySome
+    :: (ToPersistEntity a1 a)
+    => QueryRange -> QuerySimple (Projection Flat a1) -> m [a]
+  default querySome
+    :: ( ToPersistEntity a1 a
+       , MonadAppDb n
+       , MonadTrans t
+       , m ~ t n
+       )
+    => QueryRange -> QuerySimple (Projection Flat a1) -> m [a]
+  querySome = (lift .) . querySome
 
   queryOne
     :: (ToPersistEntity a1 a)
