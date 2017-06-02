@@ -1,5 +1,6 @@
 {-# LANGUAGE ConstrainedClassMethods #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies #-}
 
@@ -12,10 +13,11 @@ import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Yaml as Yaml
 import Data.Monoid
+import Control.Lens
 import System.Environment
 
 type AppEnv = Text
-type SettingMap a = Map AppEnv (Setting a)
+type SettingMap s = Map AppEnv s
 
 currentEnv :: IO AppEnv
 currentEnv = Text.pack <$> fromMaybe "development" <$> lookupEnv "APP_ENV"
@@ -23,19 +25,30 @@ currentEnv = Text.pack <$> fromMaybe "development" <$> lookupEnv "APP_ENV"
 readYaml :: FilePath -> IO (Maybe Yaml.Value)
 readYaml file = Yaml.decodeFile file
 
-class Configurable a where
-  data Setting a
-  data Running a
-
-  initialize :: Setting a -> IO (Running a)
-
-  readConfigFile :: IO (SettingMap a)
+class ConfigurableSetting setting where
+  readConfigFile :: IO (SettingMap setting)
   readConfigFile = return Map.empty
 
-  readEnvVars :: IO (Maybe (Setting a))
+  readEnvVars :: IO (Maybe setting)
   readEnvVars = return Nothing
 
-current :: (Configurable a, Monoid (Setting a)) => IO (Setting a)
+class ConfigurableRunning running
+
+class Configurable setting running where
+  initialize :: setting -> IO running
+
+
+setup :: ( Configurable setting running
+         , ConfigurableSetting setting
+         , ConfigurableRunning running
+         , Monoid setting
+         ) => IO (setting, running)
+setup = do
+  setting <- current
+  running <- initialize setting
+  return (setting, running)
+
+current :: (ConfigurableSetting setting, Monoid setting) => IO setting
 current = do
   env <- currentEnv
   whole' <- whole
@@ -43,10 +56,17 @@ current = do
       y = whole' ! env
   return $ (x <> y)
 
-pick :: (Configurable a) => AppEnv -> IO (Setting a)
+pick :: (ConfigurableSetting setting) => AppEnv -> IO setting
 pick env = (! env) <$> whole
 
-whole :: (Configurable a) => IO (SettingMap a)
+whole :: (ConfigurableSetting setting) => IO (SettingMap setting)
 whole = do
   x <- maybe Map.empty (Map.singleton "envs") <$> readEnvVars
   Map.union x <$> readConfigFile
+
+
+setting :: (ConfigurableSetting s, ConfigurableRunning r) => Lens' (s, r) s
+setting = _1
+
+running :: (ConfigurableSetting s, ConfigurableRunning r) => Lens' (s, r) r
+running = _2

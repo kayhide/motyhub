@@ -22,16 +22,15 @@ import Data.Aeson
 import Control.Monad.Reader
        (MonadReader, ReaderT(ReaderT), reader, runReaderT)
 import Control.Natural ((:~>)(NT))
+import Control.Lens
 import Network.Wai
 import Network.Wai.Handler.Warp
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import Servant
 
-import Lib.Db as Db
 import Lib.Config as Config
 import App.Config
 import App.Config.Application
-import App.Config.Db
 import App.Route
 import App.Monad.Handleable
 import qualified App.Concept.Blog.Handler as Blog
@@ -54,16 +53,9 @@ server = Blog.handlers :<|> Article.handlers
 
 startApp :: IO ()
 startApp = do
-  applicationSetting :: ApplicationSetting <- Config.current
-  applicationRunning <- Config.initialize applicationSetting
-  dbSetting :: DbSetting <- Config.current
-  dbRunning <- Config.initialize dbSetting
-  let
-    port = applicationRunningPort applicationRunning
-    config = Config
-      (FullSetting applicationSetting dbSetting)
-      (FullRunning applicationRunning dbRunning)
+  config <- Config <$> Config.setup <*> Config.setup
+  let port' = config ^. application . running . port
   putStrLn $
-    "running motyhub on port " <> show port <> "..."
+    "running motyhub on port " <> show port' <> "..."
 
-  run port . logStdoutDev $ makeApp config
+  run port' . logStdoutDev $ makeApp config

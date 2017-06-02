@@ -58,17 +58,7 @@ instance MonadBaseControl IO Dev where
   liftBaseWith f = Dev $ liftBaseWith $ \q -> f (q . unDev)
   restoreM = Dev . restoreM
 
-setup :: IO Config
-setup = do
-  applicationSetting :: ApplicationSetting <- Config.current
-  applicationRunning <- Config.initialize applicationSetting
-  dbSetting :: DbSetting <- Config.current
-  dbRunning <- Config.initialize dbSetting
-  return $ Config
-      (FullSetting applicationSetting dbSetting)
-      (FullRunning applicationRunning dbRunning)
-
 runDb :: AppDbT Dev a -> IO a
 runDb sql = do
-  conf <- setup
-  flip runReaderT conf $ unDev $ runAppDbT sql
+  config <- Config <$> Config.setup <*> Config.setup
+  flip runReaderT config $ unDev $ runAppDbT sql

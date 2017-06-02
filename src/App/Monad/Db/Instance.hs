@@ -22,17 +22,17 @@ import Language.SQL.Keyword
 import App.Prelude
 import App.Monad.Db.Class
 import App.Monad.Db.Trans
-import App.Config
 import App.Config.Db
 
 
 run' :: ( MonadIO m
         , MonadBaseControl IO m
-        , MonadReader App.Config.Config m
         , MonadThrow m
+        , MonadReader config m
+        , HasDbConfig config
         ) => SqlPersistT m a -> m a
 run' sql = do
-  pool <- reader $ (dbRunningPool . fullRunningDb . configRunning)
+  pool <- reader $ view (dbConfig . running . pool)
   runSqlPool sql pool
 
 build :: (PersistEntity v, Default v) => Changeset v -> v
@@ -47,8 +47,9 @@ apply updates record = foldr apply' record updates
 
 instance ( MonadIO m
          , MonadBaseControl IO m
-         , MonadReader App.Config.Config m
          , MonadThrow m
+         , MonadReader config m
+         , HasDbConfig config
          ) => MonadAppDb (AppDbT m) where
 
   queryMany proj = lift $ run' $ do

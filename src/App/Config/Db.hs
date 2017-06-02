@@ -1,10 +1,15 @@
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeFamilies #-}
 
-module App.Config.Db where
+module App.Config.Db
+  ( module App.Config.Db
+  , module Lib.Config
+  ) where
 
 import Data.Maybe
 import qualified Data.Map as Map
@@ -15,7 +20,7 @@ import Data.Monoid
 import Data.Aeson.Lens
 import Data.Default
 import Control.Applicative
-import Control.Lens.Operators
+import Control.Lens
 import Control.Lens.TH
 import System.FilePath
 import System.Environment
@@ -25,78 +30,83 @@ import Database.Persist.Sql (ConnectionPool)
 import Lib.Config
 import Lib.Db as Db
 
-data DbConfig
-type DbSetting = Setting DbConfig
-type DbRunning = Running DbConfig
 
-instance Default DbSetting
+class HasDbConfig a where
+  dbConfig :: Lens' a DbConfig
+
+data DbSetting = DbSetting
+  { settingHost :: Maybe Text
+  , settingPort :: Maybe Int
+  , settingDatabase :: Maybe Text
+  , settingUsername :: Maybe Text
+  , settingPassword :: Maybe Text
+  , settingEncoding :: Maybe Text
+  , settingUrl :: Maybe Text
+  , settingPool :: Maybe Int
+  } deriving (Show, Generic, Default)
+
+data DbRunning = DbRunning
+  { runningPool :: !ConnectionPool
+  } deriving (Show, Generic)
+
+type DbConfig = (DbSetting, DbRunning)
+
+makeLensesWith abbreviatedFields ''DbSetting
+makeLensesWith abbreviatedFields ''DbRunning
 
 instance Monoid DbSetting where
   mempty = def
   mappend x y = DbSetting
-    (dbSettingHost x <|> dbSettingHost y)
-    (dbSettingPort x <|> dbSettingPort y)
-    (dbSettingDatabase x <|> dbSettingDatabase y)
-    (dbSettingUsername x <|> dbSettingUsername y)
-    (dbSettingPassword x <|> dbSettingPassword y)
-    (dbSettingEncoding x <|> dbSettingEncoding y)
-    (dbSettingUrl x <|> dbSettingUrl y)
-    (dbSettingPool x <|> dbSettingPool y)
+    (settingHost x <|> settingHost y)
+    (settingPort x <|> settingPort y)
+    (settingDatabase x <|> settingDatabase y)
+    (settingUsername x <|> settingUsername y)
+    (settingPassword x <|> settingPassword y)
+    (settingEncoding x <|> settingEncoding y)
+    (settingUrl x <|> settingUrl y)
+    (settingPool x <|> settingPool y)
 
-instance Configurable DbConfig where
-  data Setting DbConfig = DbSetting
-    { dbSettingHost :: Maybe Text
-    , dbSettingPort :: Maybe Int
-    , dbSettingDatabase :: Maybe Text
-    , dbSettingUsername :: Maybe Text
-    , dbSettingPassword :: Maybe Text
-    , dbSettingEncoding :: Maybe Text
-    , dbSettingUrl :: Maybe Text
-    , dbSettingPool :: Maybe Int
-    } deriving (Show, Generic)
-
-  data Running DbConfig = DbRunning
-    { dbRunningPool :: !ConnectionPool
-    } deriving (Show, Generic)
-
-  initialize setting = DbRunning <$> Db.makePoolFromUrl count url
-    where
-      count = fromJust $ dbSettingPool setting
-      url = Text.encodeUtf8 $ buildConnectionInfo setting
-
+instance ConfigurableSetting DbSetting where
   readConfigFile = do
     Just vals <- readYaml configFile
     return $ Map.fromList $ pick <$> vals ^@.. members
       where
+        configFile = "config" </> "db.yaml"
         pick (env, vals) = (,) env $ DbSetting
-          { dbSettingHost = vals ^? key "host" . _String
-          , dbSettingPort = vals ^? key "port" . _Integral
-          , dbSettingDatabase = vals ^? key "database" . _String
-          , dbSettingUsername = vals ^? key "username" . _String
-          , dbSettingPassword = vals ^? key "password" . _String
-          , dbSettingEncoding = vals ^? key "encoding" . _String
-          , dbSettingUrl = vals ^? key "url" . _String
-          , dbSettingPool = vals ^? key "pool" . _Integral
+          { settingHost = vals ^? key "host" . _String
+          , settingPort = vals ^? key "port" . _Integral
+          , settingDatabase = vals ^? key "database" . _String
+          , settingUsername = vals ^? key "username" . _String
+          , settingPassword = vals ^? key "password" . _String
+          , settingEncoding = vals ^? key "encoding" . _String
+          , settingUrl = vals ^? key "url" . _String
+          , settingPool = vals ^? key "pool" . _Integral
           }
 
   readEnvVars = Just <$> do
     url' <- lookupEnv "DATABASE_URL"
     pool' <- lookupEnv "DATABASE_POOL"
     return $ def
-      { dbSettingUrl = fmap Text.pack url'
-      , dbSettingPool = fmap read pool'
+      { settingUrl = fmap Text.pack url'
+      , settingPool = fmap read pool'
       }
 
-configFile :: FilePath
-configFile = "config" </> "db.yaml"
+instance ConfigurableRunning DbRunning
 
-buildConnectionInfo :: Setting DbConfig -> Text
-buildConnectionInfo conf = fromMaybe info $ dbSettingUrl conf
+instance Configurable DbSetting DbRunning where
+  initialize setting = DbRunning <$> Db.makePoolFromUrl count url
+    where
+      count = fromJust $ settingPool setting
+      url = Text.encodeUtf8 $ buildConnectionInfo setting
+
+
+buildConnectionInfo :: DbSetting -> Text
+buildConnectionInfo conf = fromMaybe info $ settingUrl conf
   where
     info = Text.unwords $ catMaybes
-      [ ("host=" <>) <$> dbSettingHost conf
-      , ("port=" <>) . Text.pack . show <$> dbSettingPort conf
-      , ("dbname=" <>) <$> dbSettingDatabase conf
-      , ("user=" <>) <$> dbSettingUsername conf
-      , ("password=" <>) <$> dbSettingPassword conf
+      [ ("host=" <>) <$> settingHost conf
+      , ("port=" <>) . Text.pack . show <$> settingPort conf
+      , ("dbname=" <>) <$> settingDatabase conf
+      , ("user=" <>) <$> settingUsername conf
+      , ("password=" <>) <$> settingPassword conf
       ]

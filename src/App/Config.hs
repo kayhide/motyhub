@@ -4,31 +4,28 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module App.Config where
+module App.Config
+  ( module App.Config
+  , module Lib.Config
+  ) where
 
 import Control.Lens
 import GHC.Generics
 
+import Lib.Config
 import App.Config.Application
 import App.Config.Db
 
-data FullSetting = FullSetting
-  { fullSettingApplication :: ApplicationSetting
-  , fullSettingDb :: DbSetting
-  } deriving (Show, Generic)
-
-makeFields ''FullSetting
-
-data FullRunning = FullRunning
-  { fullRunningApplication :: ApplicationRunning
-  , fullRunningDb :: DbRunning
-  } deriving (Show, Generic)
-
-makeFields ''FullRunning
 
 data Config = Config
-  { configSetting :: FullSetting
-  , configRunning :: FullRunning
+  { configApplication :: ApplicationConfig
+  , configDb :: DbConfig
   } deriving (Show, Generic)
 
 makeFields ''Config
+
+instance HasApplicationConfig Config where
+  applicationConfig = application
+
+instance HasDbConfig Config where
+  dbConfig = db
