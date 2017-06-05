@@ -36,20 +36,29 @@ import qualified App.Concept.Blog.Handler as Blog
 import qualified App.Concept.Article.Handler as Article
 
 
-server :: ServerT API Handleable
-server = Blog.handlers :<|> Article.handlers
+handlers :: ServerT API Handleable
+handlers = Blog.handlers :<|> Article.handlers
 
-makeApp :: Config -> Application
-makeApp config = serve (Proxy :: Proxy API) apiServer
+
+apiServer :: Config -> Server API
+apiServer config = enter naturalTrans handlers
   where
-    apiServer :: Server API
-    apiServer = enter naturalTrans server
-
     naturalTrans :: Handleable :~> Handler
     naturalTrans = NT transformation
 
     transformation :: forall a . Handleable a -> Handler a
     transformation = Handler . flip runReaderT config . unHandleable
+
+rawServer :: Server Raw
+rawServer = serveDirectoryFileServer "static/"
+
+
+makeApp :: Config -> Application
+makeApp config = serve proxy (apiServer config :<|> rawServer)
+  where
+    proxy :: Proxy (API :<|> Raw)
+    proxy = Proxy
+
 
 startApp :: IO ()
 startApp = do
