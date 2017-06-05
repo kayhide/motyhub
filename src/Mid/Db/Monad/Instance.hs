@@ -3,6 +3,7 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 module Mid.Db.Monad.Instance where
@@ -43,6 +44,21 @@ apply updates record = foldr apply' record updates
   where
     apply' :: (PersistEntity v) => Update v -> v -> v
     apply' (Update f x Assign) record = entityVal $ set (fieldLens f) x (Entity undefined record)
+    apply' (Update f x Add) record =
+      let lala = Entity undefined record ^. fieldLens f
+          gaga = toPersistValue lala
+          baba =
+            case gaga of
+              PersistInt64 int64A ->
+                case toPersistValue x of
+                  PersistInt64 int64B -> PersistInt64 $ int64A + int64B
+                  _ -> error "bad"
+              _ -> error "bad"
+          haha = fromPersistValue baba
+      in case haha of
+           Right h ->
+             entityVal $ set (fieldLens f) h (Entity undefined record)
+           Left _ -> error "bad"
     apply' _ _ = error $ "apply supports only `Update` of `Assign`"
 
 instance ( MonadIO m
