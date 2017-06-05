@@ -1,4 +1,4 @@
-module Lib.Db where
+module Mid.Db.Util where
 
 import Control.Monad.Logger (runStdoutLoggingT)
 import Database.Persist.Postgresql (ConnectionString, createPostgresqlPool)

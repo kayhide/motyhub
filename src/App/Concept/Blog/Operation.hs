@@ -20,46 +20,46 @@ import qualified Database.Persist as Persist
 import Database.Persist.Relational
 import Database.Relational.Query
 
-import Lib.Query
+import Mid.Db.Query
 
 import App.Model
 import qualified App.Concept.Blog as Blog
 import qualified App.Concept.Article as Article
-import App.Monad.Db as Db
+import Mid.Db.Monad as Db
 
 
-all :: (MonadAppDb m) => m [Entity Blog]
+all :: (MonadMidDb m) => m [Entity Blog]
 all = all_ >>= asc_ Blog.id' & Db.queryMany
 
-lookup :: (MonadAppDb m) => BlogId -> m (Maybe (Entity Blog))
+lookup :: (MonadMidDb m) => BlogId -> m (Maybe (Entity Blog))
 lookup key = all_ >>= lookup_ key & Db.queryOne
 
-find :: (MonadAppDb m) => BlogId -> m (Entity Blog)
+find :: (MonadMidDb m) => BlogId -> m (Entity Blog)
 find key = fromJust <$> lookup key
 
-create :: (MonadAppDb m, MonadIO m) => Changeset Blog -> m (Entity Blog)
+create :: (MonadMidDb m, MonadIO m) => Changeset Blog -> m (Entity Blog)
 create changeset = do
   now <- liftIO getCurrentTime
   Db.create $ changeset ++ [BlogCreatedAt =. now, BlogUpdatedAt =. now]
 
-update :: (MonadAppDb m, MonadIO m) => (Entity Blog) -> Changeset Blog -> m (Entity Blog)
+update :: (MonadMidDb m, MonadIO m) => (Entity Blog) -> Changeset Blog -> m (Entity Blog)
 update blog changeset = do
   now <- liftIO getCurrentTime
   Db.update blog $ changeset ++ [BlogUpdatedAt =. now]
 
-destroy :: (MonadAppDb m) => (Entity Blog) -> m ()
+destroy :: (MonadMidDb m) => (Entity Blog) -> m ()
 destroy = Db.destroy
 
-reload :: (MonadAppDb m) => (Entity Blog) -> m (Entity Blog)
+reload :: (MonadMidDb m) => (Entity Blog) -> m (Entity Blog)
 reload (Entity key _) = find key
 
-first :: (MonadAppDb m) => m (Maybe (Entity Blog))
+first :: (MonadMidDb m) => m (Maybe (Entity Blog))
 first = all_ >>= asc_ Blog.id' & Db.queryOne
 
-last :: (MonadAppDb m) => m (Maybe (Entity Blog))
+last :: (MonadMidDb m) => m (Maybe (Entity Blog))
 last = all_ >>= desc_ Blog.id' & Db.queryOne
 
-count :: (MonadAppDb m) => m Int
+count :: (MonadMidDb m) => m Int
 count = all_ >>= count_ Blog.id' & Db.queryCounted
 
 

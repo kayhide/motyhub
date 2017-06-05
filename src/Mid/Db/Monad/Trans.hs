@@ -4,14 +4,14 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module App.Monad.Db.Trans where
+module Mid.Db.Monad.Trans where
 
 import Control.Monad.Trans.Control
 import Control.Monad.Trans.Resource
 
-import App.Prelude
+import Mid.Db.Prelude
 
-newtype AppDbT m a = AppDbT { unAppDbT :: IdentityT m a }
+newtype MidDbT m a = MidDbT { unMidDbT :: IdentityT m a }
   deriving
     ( Functor
     , Applicative
@@ -22,22 +22,22 @@ newtype AppDbT m a = AppDbT { unAppDbT :: IdentityT m a }
     , MonadTrans
     )
 
-runAppDbT :: AppDbT m a -> m a
-runAppDbT = runIdentityT . unAppDbT
+runMidDbT :: MidDbT m a -> m a
+runMidDbT = runIdentityT . unMidDbT
 
-instance MonadTransControl AppDbT where
-  type StT AppDbT a = a
-  liftWith f = lift (f runAppDbT)
-  restoreT = AppDbT . IdentityT
+instance MonadTransControl MidDbT where
+  type StT MidDbT a = a
+  liftWith f = lift (f runMidDbT)
+  restoreT = MidDbT . IdentityT
   {-# INLINABLE liftWith #-}
   {-# INLINABLE restoreT #-}
 
-instance MonadBaseControl b m => MonadBaseControl b (AppDbT m) where
-  type StM (AppDbT m) a = ComposeSt AppDbT m a
+instance MonadBaseControl b m => MonadBaseControl b (MidDbT m) where
+  type StM (MidDbT m) a = ComposeSt MidDbT m a
   liftBaseWith = defaultLiftBaseWith
   restoreM = defaultRestoreM
   {-# INLINABLE liftBaseWith #-}
   {-# INLINABLE restoreM #-}
 
-instance MonadResource m => MonadResource (AppDbT m) where
+instance MonadResource m => MonadResource (MidDbT m) where
   liftResourceT = lift . liftResourceT

@@ -6,8 +6,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module App.Config.Db
-  ( module App.Config.Db
+module Mid.Db.Config
+  ( module Mid.Db.Config
   , module Lib.Config
   ) where
 
@@ -28,7 +28,7 @@ import GHC.Generics
 import Database.Persist.Sql (ConnectionPool)
 
 import Lib.Config
-import Lib.Db as Db
+import Mid.Db.Util as Db
 
 
 class HasDbConfig a where

@@ -21,8 +21,8 @@ import Servant
 
 import App.Config (Config(..))
 import qualified App.Config as Config
-import qualified App.Config.Db as Config
-import App.Monad.Db
+import qualified Mid.Db.Config as Config
+import Mid.Db.Monad
 
 newtype Handleable a = Handleable
   { unHandleable :: ReaderT Config (ExceptT ServantErr IO) a
@@ -57,8 +57,8 @@ instance MonadBaseControl IO Handleable where
   restoreM eitherA = Handleable . ReaderT . const . ExceptT $ pure eitherA
 
 
-runDb :: AppDbT Handleable a -> Handleable a
-runDb = runAppDbT
+runDb :: MidDbT Handleable a -> Handleable a
+runDb = runMidDbT
 
 verifyPresence :: Maybe a -> Handleable a
 verifyPresence (Just x) = return x

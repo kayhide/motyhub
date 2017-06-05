@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE RankNTypes #-}
 
-module Lib.Query where
+module Mid.Db.Query where
 
 import Database.Relational.Query hiding (asc, desc, wheres)
 import qualified Database.Relational.Query as Query

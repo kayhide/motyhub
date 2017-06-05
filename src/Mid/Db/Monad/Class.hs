@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module App.Monad.Db.Class where
+module Mid.Db.Monad.Class where
 
 import Data.Maybe
 import Data.Default
@@ -13,7 +13,7 @@ import Database.Persist.Sql hiding (insert, update, delete)
 import Database.Persist.Relational
 import Database.Relational.Query hiding (Update, set)
 
-import App.Prelude
+import Mid.Db.Prelude
 
 type Changeset v = [Update v]
 
@@ -26,14 +26,14 @@ instance ( PersistEntityBackend record ~ SqlBackend
 
 data QueryRange = Limit Int | Offset Int | LimitOffset Int Int | PagePer Int Int
 
-class Monad m => MonadAppDb m where
+class Monad m => MonadMidDb m where
 
   queryMany
     :: (ToPersistEntity a1 a)
     => QuerySimple (Projection Flat a1) -> m [a]
   default queryMany
     :: ( ToPersistEntity a1 a
-       , MonadAppDb n
+       , MonadMidDb n
        , MonadTrans t
        , m ~ t n
        )
@@ -45,7 +45,7 @@ class Monad m => MonadAppDb m where
     => QueryRange -> QuerySimple (Projection Flat a1) -> m [a]
   default querySome
     :: ( ToPersistEntity a1 a
-       , MonadAppDb n
+       , MonadMidDb n
        , MonadTrans t
        , m ~ t n
        )
@@ -57,7 +57,7 @@ class Monad m => MonadAppDb m where
     => QuerySimple (Projection Flat a1) -> m (Maybe a)
   default queryOne
     :: ( ToPersistEntity a1 a
-       , MonadAppDb n
+       , MonadMidDb n
        , MonadTrans t
        , m ~ t n
        )
@@ -69,7 +69,7 @@ class Monad m => MonadAppDb m where
     => QueryAggregate (Projection Aggregated a1) -> m (Maybe a)
   default queryAggregated
     :: ( ToPersistEntity a1 a
-       , MonadAppDb n
+       , MonadMidDb n
        , MonadTrans t
        , m ~ t n
        )
@@ -83,7 +83,7 @@ class Monad m => MonadAppDb m where
   -- default queryCounted
   --   :: ( ToPersistEntity a1 a
   --      , a ~ Int
-  --      , MonadAppDb n
+  --      , MonadMidDb n
   --      , MonadTrans t
   --      , m ~ t n
   --      )
@@ -97,7 +97,7 @@ class Monad m => MonadAppDb m where
   default create
     :: ( DbEntity record
        , Default record
-       , MonadAppDb n
+       , MonadMidDb n
        , MonadTrans t
        , m ~ t n
        )
@@ -109,7 +109,7 @@ class Monad m => MonadAppDb m where
     => Entity record -> Changeset record -> m (Entity record)
   default update
     :: ( DbEntity record
-       , MonadAppDb n
+       , MonadMidDb n
        , MonadTrans t
        , m ~ t n
        )
@@ -121,7 +121,7 @@ class Monad m => MonadAppDb m where
     => Entity record -> m ()
   default destroy
     :: ( DbEntity record
-       , MonadAppDb n
+       , MonadMidDb n
        , MonadTrans t
        , m ~ t n
        )
@@ -129,4 +129,4 @@ class Monad m => MonadAppDb m where
   destroy = lift . destroy
 
 
-instance MonadAppDb m => MonadAppDb (ReaderT r m)
+instance MonadMidDb m => MonadMidDb (ReaderT r m)

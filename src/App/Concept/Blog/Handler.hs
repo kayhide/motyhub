@@ -12,7 +12,7 @@ import Servant
 
 import App.Model
 import App.Monad.Handleable
-import App.Monad.Db
+import Mid.Db.Monad
 import qualified App.Concept.Blog.Operation as Blog
 import App.Concept.Blog.Serializer
 

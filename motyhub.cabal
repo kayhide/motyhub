@@ -15,22 +15,23 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Lib.Db
-                     , Lib.Config
+  exposed-modules:     Lib.Config
                      , Lib.Serializer
-                     , Lib.Query
+                     , Mid.Db.Prelude
+                     , Mid.Db.Config
+                     , Mid.Db.Monad
+                     , Mid.Db.Monad.Class
+                     , Mid.Db.Monad.Instance
+                     , Mid.Db.Monad.Trans
+                     , Mid.Db.Query
+                     , Mid.Db.Util
                      , App.Prelude
                      , App.Orphan
                      , App.Config
                      , App.Config.Application
-                     , App.Config.Db
                      , App.Route
                      , App.Model
                      , App.Monad.Handleable
-                     , App.Monad.Db
-                     , App.Monad.Db.Class
-                     , App.Monad.Db.Instance
-                     , App.Monad.Db.Trans
                      , App.Concept.Blog
                      , App.Concept.Blog.Serializer
                      , App.Concept.Blog.Operation

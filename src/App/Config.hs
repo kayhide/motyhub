@@ -14,7 +14,7 @@ import GHC.Generics
 
 import Lib.Config
 import App.Config.Application
-import App.Config.Db
+import Mid.Db.Config
 
 
 data Config = Config

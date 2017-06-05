@@ -18,7 +18,7 @@ import Test.Hspec.Wai.JSON
 
 import Lib.Config as Config
 import App.Config
-import App.Config.Db
+import Mid.Db.Config
 import App.Model as Model
 import qualified App.Concept.Blog as Blog
 import qualified App.Concept.Blog.Operation as Blog

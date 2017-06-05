@@ -30,13 +30,13 @@ import Database.Persist.Relational
 import Database.Relational.Query hiding (Config)
 
 import Lib.Config as Config
-import Lib.Query
+import Mid.Db.Query
+import Mid.Db.Config
+import Mid.Db.Monad
 import App.Prelude
 import App.Config
 import App.Config.Application
-import App.Config.Db
 import App.Model
-import App.Monad.Db
 import qualified App.Concept.Blog as Blog
 import qualified App.Concept.Blog.Operation as Blog
 import qualified App.Concept.Article as Article
@@ -58,7 +58,7 @@ instance MonadBaseControl IO Dev where
   liftBaseWith f = Dev $ liftBaseWith $ \q -> f (q . unDev)
   restoreM = Dev . restoreM
 
-runDb :: AppDbT Dev a -> IO a
+runDb :: MidDbT Dev a -> IO a
 runDb sql = do
   config <- Config <$> Config.setup <*> Config.setup
-  flip runReaderT config $ unDev $ runAppDbT sql
+  flip runReaderT config $ unDev $ runMidDbT sql

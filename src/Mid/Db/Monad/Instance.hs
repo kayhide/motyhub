@@ -5,7 +5,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module App.Monad.Db.Instance where
+module Mid.Db.Monad.Instance where
 
 import Data.Maybe
 import Data.Default
@@ -19,10 +19,10 @@ import Database.Persist.Relational
 import Database.Relational.Query hiding (Update, set)
 import Language.SQL.Keyword
 
-import App.Prelude
-import App.Monad.Db.Class
-import App.Monad.Db.Trans
-import App.Config.Db
+import Mid.Db.Prelude
+import Mid.Db.Monad.Class
+import Mid.Db.Monad.Trans
+import Mid.Db.Config
 
 
 run' :: ( MonadIO m
@@ -50,7 +50,7 @@ instance ( MonadIO m
          , MonadThrow m
          , MonadReader config m
          , HasDbConfig config
-         ) => MonadAppDb (AppDbT m) where
+         ) => MonadMidDb (MidDbT m) where
 
   queryMany proj = lift $ run' $ do
     runResourceT $ runQuery (relationalQuery rel) () $$ CL.consume

@@ -21,53 +21,53 @@ import qualified Database.Persist as Persist
 import Database.Persist.Relational
 import Database.Relational.Query
 
-import Lib.Query
+import Mid.Db.Query
 
 import App.Model
 import qualified App.Concept.Article as Article
 import qualified App.Concept.Blog as Blog
-import App.Monad.Db as Db
+import Mid.Db.Monad as Db
 
 
-all :: (MonadAppDb m) => m [Entity Article]
+all :: (MonadMidDb m) => m [Entity Article]
 all = all_ >>= asc_ Article.id' & Db.queryMany
 
-lookup :: (MonadAppDb m) => ArticleId -> m (Maybe (Entity Article))
+lookup :: (MonadMidDb m) => ArticleId -> m (Maybe (Entity Article))
 lookup key = all_ >>= lookup_ key & Db.queryOne
 
-find :: (MonadAppDb m) => ArticleId -> m (Entity Article)
+find :: (MonadMidDb m) => ArticleId -> m (Entity Article)
 find key = fromJust <$> lookup key
 
-create :: (MonadAppDb m, MonadIO m) => Changeset Article -> m (Entity Article)
+create :: (MonadMidDb m, MonadIO m) => Changeset Article -> m (Entity Article)
 create changeset = do
   now <- liftIO getCurrentTime
   Db.create $ changeset ++ [ArticleCreatedAt =. now, ArticleUpdatedAt =. now]
 
-update :: (MonadAppDb m, MonadIO m) => (Entity Article) -> Changeset Article -> m (Entity Article)
+update :: (MonadMidDb m, MonadIO m) => (Entity Article) -> Changeset Article -> m (Entity Article)
 update article changeset = do
   now <- liftIO getCurrentTime
   Db.update article $ changeset ++ [ArticleUpdatedAt =. now]
 
-destroy :: (MonadAppDb m) => (Entity Article) -> m ()
+destroy :: (MonadMidDb m) => (Entity Article) -> m ()
 destroy = Db.destroy
 
-reload :: (MonadAppDb m) => (Entity Article) -> m (Entity Article)
+reload :: (MonadMidDb m) => (Entity Article) -> m (Entity Article)
 reload (Entity key _) = find key
 
-first :: (MonadAppDb m) => m (Maybe (Entity Article))
+first :: (MonadMidDb m) => m (Maybe (Entity Article))
 first = all_ >>= asc_ Article.id' & Db.queryOne
 
-last :: (MonadAppDb m) => m (Maybe (Entity Article))
+last :: (MonadMidDb m) => m (Maybe (Entity Article))
 last = all_ >>= desc_ Article.id' & Db.queryOne
 
-count :: (MonadAppDb m) => m Int
+count :: (MonadMidDb m) => m Int
 count = all_ >>= count_ Article.id' & Db.queryCounted
 
 
-allOf :: (MonadAppDb m) => BlogId -> m [Entity Article]
+allOf :: (MonadMidDb m) => BlogId -> m [Entity Article]
 allOf blogId = all_ >>= asc_ Article.id' >>= where_ Article.blogId' (.=.) blogId & Db.queryMany
 
-lookupOf :: (MonadAppDb m) => BlogId -> ArticleId -> m (Maybe (Entity Article))
+lookupOf :: (MonadMidDb m) => BlogId -> ArticleId -> m (Maybe (Entity Article))
 lookupOf blogId key = all_ >>= where_ Article.blogId' (.=.) blogId >>= lookup_ key & Db.queryOne
 
 
