@@ -29,13 +29,11 @@ import Database.Persist.Postgresql
 import Database.Persist.Relational
 import Database.Relational.Query hiding (Config)
 
-import Lib.Config as Config
 import Mid.Db.Query
 import Mid.Db.Config
 import Mid.Db.Monad
 import App.Prelude
-import App.Config
-import App.Config.Application
+import App.Config as Config
 import App.Model
 import qualified App.Concept.Blog as Blog
 import qualified App.Concept.Blog.Operation as Blog
@@ -60,5 +58,5 @@ instance MonadBaseControl IO Dev where
 
 runDb :: MidDbT Dev a -> IO a
 runDb sql = do
-  config <- Config <$> Config.setup <*> Config.setup
+  config <- Config.boot
   flip runReaderT config $ unDev $ runMidDbT sql

@@ -29,3 +29,6 @@ instance HasApplicationConfig Config where
 
 instance HasDbConfig Config where
   dbConfig = db
+
+boot :: IO Config
+boot = Config <$> setup <*> setup

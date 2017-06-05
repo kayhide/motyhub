@@ -28,13 +28,16 @@ import Network.Wai.Handler.Warp
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import Servant
 
-import Lib.Config as Config
-import App.Config
+import App.Config as Config
 import App.Config.Application
 import App.Route
 import App.Monad.Handleable
 import qualified App.Concept.Blog.Handler as Blog
 import qualified App.Concept.Article.Handler as Article
+
+
+server :: ServerT API Handleable
+server = Blog.handlers :<|> Article.handlers
 
 makeApp :: Config -> Application
 makeApp config = serve (Proxy :: Proxy API) apiServer
@@ -48,12 +51,9 @@ makeApp config = serve (Proxy :: Proxy API) apiServer
     transformation :: forall a . Handleable a -> Handler a
     transformation = Handler . flip runReaderT config . unHandleable
 
-server :: ServerT API Handleable
-server = Blog.handlers :<|> Article.handlers
-
 startApp :: IO ()
 startApp = do
-  config <- Config <$> Config.setup <*> Config.setup
+  config <- Config.boot
   let port' = config ^. application . running . port
   putStrLn $
     "running motyhub on port " <> show port' <> "..."
