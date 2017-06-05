@@ -1,0 +1,7 @@
+#! /bin/sh
+
+files=$(find src -name "*.hs")
+pattern="^import\s+(?:qualified\s+)?(App\S+|Lib\S+|Mid\S+)"
+module="^module\s+(\S+)"
+
+rexdep --format dot --pattern "$pattern" --module "$module" $files
