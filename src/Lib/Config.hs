@@ -1,7 +1,3 @@
-{-# LANGUAGE ConstrainedClassMethods #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies #-}
 
 module Lib.Config where

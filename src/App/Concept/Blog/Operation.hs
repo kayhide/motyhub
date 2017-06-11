@@ -1,8 +1,3 @@
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RankNTypes #-}
-
 module App.Concept.Blog.Operation where
 
 import Prelude hiding (all, lookup, last)

@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module App.Orphan where
 
 import Data.Time.Clock

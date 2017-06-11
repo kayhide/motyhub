@@ -1,5 +1,3 @@
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}

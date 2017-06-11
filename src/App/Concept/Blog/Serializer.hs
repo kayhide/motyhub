@@ -1,8 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE RecordWildCards #-}
-
 module App.Concept.Blog.Serializer
   ( BlogForCreate(..)
   , BlogForUpdate(..)

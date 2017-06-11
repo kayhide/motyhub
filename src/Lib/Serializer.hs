@@ -1,5 +1,3 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
-
 module Lib.Serializer where
 
 import qualified Data.Text as Text

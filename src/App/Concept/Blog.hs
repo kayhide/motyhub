@@ -1,7 +1,4 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE FlexibleInstances #-}
 
 module App.Concept.Blog where
 
