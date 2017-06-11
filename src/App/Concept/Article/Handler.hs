@@ -22,8 +22,8 @@ handlers blogId = index' blogId :<|> show' blogId :<|> create' blogId :<|> updat
 index' :: BlogId -> Handleable [Entity Article]
 index' blogId = do
   blog' <- runDb $ Blog.lookup blogId
-  verifyPresence blog'
-  runDb $ Article.allOf blogId
+  blog <- verifyPresence blog'
+  runDb $ Blog.articles_ blog & queryMany
 
 show' :: BlogId -> ArticleId -> Handleable (Entity Article)
 show' blogId articleId = do
