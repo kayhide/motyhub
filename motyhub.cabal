@@ -81,6 +81,7 @@ library
 executable motyhub
   hs-source-dirs:      app
   main-is:             Main.hs
+  other-modules:       DevMain
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , motyhub
