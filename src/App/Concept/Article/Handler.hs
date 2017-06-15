@@ -31,7 +31,7 @@ show' blogId articleId = do
   verifyPresence article'
 
 create' :: BlogId -> ArticleForCreate -> Handleable (Entity Article)
-create' blogId articleForCreate = do
+create' blogId articleForCreate =
   runDb $ Article.create changeset
   where
     changeset = (ArticleBlogId =. blogId) : toChangeset articleForCreate

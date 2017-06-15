@@ -37,15 +37,15 @@ create changeset = do
   now <- liftIO getCurrentTime
   Db.create $ changeset ++ [BlogCreatedAt =. now, BlogUpdatedAt =. now]
 
-update :: (MonadMidDb m, MonadIO m) => (Entity Blog) -> Changeset Blog -> m (Entity Blog)
+update :: (MonadMidDb m, MonadIO m) => Entity Blog -> Changeset Blog -> m (Entity Blog)
 update blog changeset = do
   now <- liftIO getCurrentTime
   Db.update blog $ changeset ++ [BlogUpdatedAt =. now]
 
-destroy :: (MonadMidDb m) => (Entity Blog) -> m ()
+destroy :: (MonadMidDb m) => Entity Blog -> m ()
 destroy = Db.destroy
 
-reload :: (MonadMidDb m) => (Entity Blog) -> m (Entity Blog)
+reload :: (MonadMidDb m) => Entity Blog -> m (Entity Blog)
 reload (Entity key _) = find key
 
 first :: (MonadMidDb m) => m (Maybe (Entity Blog))

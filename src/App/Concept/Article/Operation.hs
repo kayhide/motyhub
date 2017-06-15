@@ -38,15 +38,15 @@ create changeset = do
   now <- liftIO getCurrentTime
   Db.create $ changeset ++ [ArticleCreatedAt =. now, ArticleUpdatedAt =. now]
 
-update :: (MonadMidDb m, MonadIO m) => (Entity Article) -> Changeset Article -> m (Entity Article)
+update :: (MonadMidDb m, MonadIO m) => Entity Article -> Changeset Article -> m (Entity Article)
 update article changeset = do
   now <- liftIO getCurrentTime
   Db.update article $ changeset ++ [ArticleUpdatedAt =. now]
 
-destroy :: (MonadMidDb m) => (Entity Article) -> m ()
+destroy :: (MonadMidDb m) => Entity Article -> m ()
 destroy = Db.destroy
 
-reload :: (MonadMidDb m) => (Entity Article) -> m (Entity Article)
+reload :: (MonadMidDb m) => Entity Article -> m (Entity Article)
 reload (Entity key _) = find key
 
 first :: (MonadMidDb m) => m (Maybe (Entity Article))

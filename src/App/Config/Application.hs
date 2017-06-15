@@ -44,7 +44,7 @@ instance ConfigurableSetting ApplicationSetting where
     Just vals <- readYaml configFile
     return $ Map.fromList $ pick <$> vals ^@.. members
       where
-        pick (env, vals) = (,) env $ ApplicationSetting
+        pick (env, vals) = (,) env ApplicationSetting
           { settingPort = vals ^? key "port" . _Integral
           }
 

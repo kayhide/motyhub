@@ -15,8 +15,6 @@ import Database.Persist.Sql
 import Servant
 
 import App.Config (Config(..))
-import qualified App.Config as Config
-import qualified Mid.Db.Config as Config
 import Mid.Db.Monad
 
 newtype Handleable a = Handleable

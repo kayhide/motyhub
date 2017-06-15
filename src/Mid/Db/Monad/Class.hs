@@ -1,4 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
@@ -77,7 +76,7 @@ class Monad m => MonadMidDb m where
   queryCounted
     :: (ToPersistEntity a1 a, a ~ Int)
     => QueryAggregate (Projection Aggregated a1) -> m Int
-  queryCounted proj = fmap fromJust $ queryAggregated proj
+  queryCounted proj = fromJust <$> queryAggregated proj
   -- default queryCounted
   --   :: ( ToPersistEntity a1 a
   --      , a ~ Int

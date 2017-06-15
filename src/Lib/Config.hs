@@ -16,10 +16,10 @@ type AppEnv = Text
 type SettingMap s = Map AppEnv s
 
 currentEnv :: IO AppEnv
-currentEnv = Text.pack <$> fromMaybe "development" <$> lookupEnv "APP_ENV"
+currentEnv = Text.pack . fromMaybe "development" <$> lookupEnv "APP_ENV"
 
 readYaml :: FilePath -> IO (Maybe Yaml.Value)
-readYaml file = Yaml.decodeFile file
+readYaml = Yaml.decodeFile
 
 class ConfigurableSetting setting where
   readConfigFile :: IO (SettingMap setting)
@@ -50,7 +50,7 @@ current = do
   whole' <- whole
   let x = fromMaybe mempty $ Map.lookup "envs" whole'
       y = whole' ! env
-  return $ (x <> y)
+  return $ x <> y
 
 pick :: (ConfigurableSetting setting) => AppEnv -> IO setting
 pick env = (! env) <$> whole

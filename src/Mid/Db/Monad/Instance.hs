@@ -46,7 +46,7 @@ apply updates record = foldr apply' record updates
       in case z of
         Right z' -> entityVal $ set (fieldLens f) z' (Entity undefined record)
         Left msg -> error $ "`fromPersistValue` failed: " ++ Text.unpack msg
-    apply' _ _ = error $ "apply supports only `Update` of `Assign` or `Add`"
+    apply' _ _ = error "apply supports only `Update` of `Assign` or `Add`"
     add' (PersistInt64 x) (PersistInt64 y) = PersistInt64 (x + y)
     add' (PersistDouble x) (PersistDouble y) = PersistDouble (x + y)
     add' _ _ = error "apply failed of inconsistent `Add` update."
@@ -58,12 +58,12 @@ instance ( MonadIO m
          , HasDbConfig config
          ) => MonadMidDb (MidDbT m) where
 
-  queryMany proj = lift $ run' $ do
+  queryMany proj = lift $ run' $
     runResourceT $ runQuery (relationalQuery rel) () $$ CL.consume
     where
       rel = relation proj
 
-  querySome range proj = lift $ run' $ do
+  querySome range proj = lift $ run' $
     runResourceT $ runQuery (relationalQuery' rel (suffix range)) () $$ CL.consume
     where
       rel = relation proj
@@ -72,13 +72,13 @@ instance ( MonadIO m
       suffix (LimitOffset limit offset) = [LIMIT, word (show limit), "OFFSET", word (show offset)]
       suffix (PagePer page per) = [LIMIT, word (show per), "OFFSET", word (show (page * per))]
 
-  queryOne proj = lift $ run' $ do
+  queryOne proj = lift $ run' $
     runResourceT $ runQuery (relationalQuery' rel suffix) () $$ CL.head
     where
       rel = relation proj
       suffix = [LIMIT, "1"]
 
-  queryAggregated proj = lift $ run' $ do
+  queryAggregated proj = lift $ run' $
     runResourceT $ runQuery (relationalQuery' rel suffix) () $$ CL.head
     where
       rel = aggregateRelation proj
@@ -92,7 +92,7 @@ instance ( MonadIO m
 
   create changeset = lift $ run' $ do
     let record = build changeset
-    key <- Persist.insert $ record
+    key <- Persist.insert record
     return $ Entity key record
 
   update (Entity key record) changeset = lift $ run' $ do

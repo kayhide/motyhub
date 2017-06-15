@@ -11,7 +11,6 @@ import Data.Default
 import Control.Lens
 import Database.Persist.TH
 import Database.Persist.Relational (mkHrrInstances)
-import Database.Persist.TH
 import GHC.Generics
 
 import App.Prelude

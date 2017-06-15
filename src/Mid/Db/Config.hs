@@ -67,7 +67,7 @@ instance ConfigurableSetting DbSetting where
     return $ Map.fromList $ pick <$> vals ^@.. members
       where
         configFile = "config" </> "db.yaml"
-        pick (env, vals) = (,) env $ DbSetting
+        pick (env, vals) = (,) env DbSetting
           { settingHost = vals ^? key "host" . _String
           , settingPort = vals ^? key "port" . _Integral
           , settingDatabase = vals ^? key "database" . _String
