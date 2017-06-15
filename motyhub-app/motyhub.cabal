@@ -2,7 +2,7 @@ name:                motyhub
 version:             0.1.0.0
 -- synopsis:
 -- description:
-homepage:            https://github.com/runnable-inc/motyhub#readme
+homepage:            https://github.com/runnable-inc/motyhub/motyhub-app#readme
 license:             BSD3
 license-file:        LICENSE
 author:              kayhide
@@ -175,4 +175,4 @@ test-suite motyhub-test
 
 source-repository head
   type:     git
-  location: https://github.com/runnable-inc/motyhub
+  location: https://github.com/runnable-inc/motyhub/motyhub-app

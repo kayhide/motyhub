@@ -1,2 +1,2 @@
 config:
-  database: config/db.yaml
+  database: motyhub/config/db.yaml
