@@ -1,0 +1,12 @@
+resolver: lts-8.13
+
+packages:
+- '../motyhub-base'
+- '.'
+
+extra-deps:
+- xml-html-conduit-lens-0.3.2.3
+
+flags: {}
+
+extra-package-dbs: []
