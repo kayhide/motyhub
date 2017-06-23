@@ -10,7 +10,7 @@ import qualified Data.Text.IO as Text
 import qualified Data.Text.Lazy.IO as LazyText
 import Text.Xml.Lens
 import Network.URI
-import qualified Network.Wreq as Wreq
+import Network.Wreq.Lens (responseBody)
 import Control.Arrow
 import Control.Lens
 import System.Environment
@@ -28,21 +28,22 @@ run = do
   putStrLn "trying crawler..."
   res <- runCrawler $ do
     res <- get url
-    let Just form = res ^? Wreq.responseBody . forms
+    let Just form = res ^? responseBody . forms
         form' = form
                 & fields . at "username" .~ Just username
                 & fields . at "password" .~ Just password
 
-    res <- submitFrom url form'
+    res <- submit form'
     let Just link =
-          res ^? Wreq.responseBody . links
+          res ^? responseBody . links
           . filtered (isInfixOf "__mode=cfg_prefs" . uriQuery . view href)
           . filtered (not . isInfixOf "blog_id=1" . uriQuery . view href)
 
-    clickFrom url link
-  mapM_ print' $ res ^.. Wreq.responseBody . html
-  mapM_ printForm' $ res ^.. Wreq.responseBody . forms
-  -- mapM_ printLink' $ res ^.. Wreq.responseBody . links
+    res <- click link
+    return res
+  mapM_ print' $ res ^.. responseBody . html
+  mapM_ printForm' $ res ^.. responseBody . forms
+  -- mapM_ printLink' $ res ^.. responseBody . links
 
 
 -- * For debug

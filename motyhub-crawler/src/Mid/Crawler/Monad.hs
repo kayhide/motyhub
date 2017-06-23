@@ -1,4 +1,3 @@
-
 module Mid.Crawler.Monad where
 
 import qualified Data.Map as Map
@@ -15,6 +14,7 @@ import Mid.Crawler.Type
 
 
 data CrawlerI a where
+  CurrentUrl :: CrawlerI URI
   Get :: URI -> CrawlerI Response
   Submit :: Form -> CrawlerI Response
   Click :: Link -> CrawlerI Response
@@ -23,39 +23,52 @@ data CrawlerI a where
 type Crawler a = Program CrawlerI a
 
 runCrawler :: Crawler a -> IO a
-runCrawler m = Session.withSession $ \session -> runCrawler' session m
-
-runCrawler' :: Session -> Crawler a -> IO a
-runCrawler' session = eval session . view
+runCrawler m = Session.withSession $ \session -> runCrawler' session url m
   where
-    eval :: Session -> ProgramView CrawlerI a -> IO a
+    url = URI "" Nothing "" "" ""
 
-    eval _ (Return x) = return x
+runCrawler' :: Session -> URI -> Crawler a -> IO a
+runCrawler' session url = eval session url . view
+  where
+    eval :: Session -> URI -> ProgramView CrawlerI a -> IO a
 
-    eval session (Get url :>>= k) =
-      Session.get session (show url) >>= runCrawler' session . k
+    eval _ _ (Return x) = return x
 
-    eval session (Submit form :>>= k) =
-      Session.post session url' xs' >>= runCrawler' session . k
+    eval session url (CurrentUrl :>>= k) =
+      return url
+      >>= runCrawler' session url . k
+
+    eval session _ (Get url :>>= k) =
+      Session.get session (show url)
+      >>= runCrawler' session url . k
+
+    eval session _ (Submit form :>>= k) =
+      Session.post session (show uri') xs'
+      >>= runCrawler' session uri' . k
       where
-        url' = form ^. action . to show
+        uri' = form ^. action
         xs' = uncurry (:=) <$> form ^. fields . to Map.toList
 
-    eval session (Click link :>>= k) =
-      Session.get session url' >>= runCrawler' session . k
+    eval session _ (Click link :>>= k) =
+      Session.get session (show uri')
+      >>= runCrawler' session uri' . k
       where
-        url' = link ^. href . to show
+        uri' = link ^. href
 
+currentUrl :: Crawler URI
+currentUrl = singleton CurrentUrl
 
 get :: URI -> Crawler Response
 get = singleton . Get
 
-submitFrom :: URI -> Form -> Crawler Response
-submitFrom url form = singleton $ Submit form'
-  where
-    form' = form & action %~ flip relativeTo url
+submit :: Form -> Crawler Response
+submit form = do
+  url <- currentUrl
+  let form' = form & action %~ flip relativeTo url
+  singleton $ Submit form'
 
-clickFrom :: URI -> Link -> Crawler Response
-clickFrom url link = singleton $ Click link'
-  where
-    link' = link & href %~ flip relativeTo url
+click :: Link -> Crawler Response
+click link = do
+  url <- currentUrl
+  let link' = link & href %~ flip relativeTo url
+  singleton $ Click link'
