@@ -19,7 +19,6 @@ forms
   => p Form (f Form) -> t -> f t
 forms = html . folding universe . named (only "form") . to toForm . folded
 
-
 toForm :: Element -> Maybe Form
 toForm element = Form <$> action' <*> return fields' <*> return element
   where
@@ -35,22 +34,17 @@ toForm element = Form <$> action' <*> return fields' <*> return element
       return (Text.encodeUtf8 (fromJust key'), value')
 
 
-
-
 links
   :: (Applicative f, Indexable Int p, Contravariant f, AsHtmlDocument t)
   => p Link (f Link) -> t -> f t
 links = html . folding universe . named (only "a") . to toLink . folded
 
 toLink :: Element -> Maybe Link
-toLink element = Link <$> href' <*> return text' <*> return element
+toLink element = Link <$> href' <*> return element
   where
     href' =
       element ^. attr "href"
       >>= parseURIReference . Text.unpack
-
-    text' =
-      element ^. folding universe . text . to (Text.unwords . Text.words)
 
 
 domId
@@ -62,3 +56,8 @@ domClass
   :: (Applicative f, Contravariant f, HasDom s Element)
   => (Text -> f Text) -> s -> f s
 domClass = dom . attr "class" . folded . to Text.words . folded
+
+innerText
+  :: (Applicative f, Contravariant f, HasDom s Element)
+  => (Text -> f Text) -> s -> f s
+innerText = dom . folding universe . text . to (Text.unwords . Text.words)

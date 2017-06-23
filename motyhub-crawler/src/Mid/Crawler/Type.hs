@@ -28,7 +28,6 @@ makeFields ''Form
 
 data Link = Link
   { _linkHref :: URI
-  , _linkAnchor :: Text
   , _linkDom :: Element
   } deriving (Show, Generic)
 
