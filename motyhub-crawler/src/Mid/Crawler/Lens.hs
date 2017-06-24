@@ -6,6 +6,8 @@ import qualified Data.Map as Map
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Text
+import qualified Data.Text.Lazy as LazyText
+import qualified Data.Text.Lazy.Encoding as LazyText
 import Control.Monad
 import Control.Lens
 import Text.Xml.Lens
@@ -13,6 +15,9 @@ import Network.URI
 
 import Mid.Crawler.Type
 
+
+unescapeHtmlEntity :: Text -> Text
+unescapeHtmlEntity x = ((LazyText.encodeUtf8 . LazyText.fromStrict) x) ^. html . text
 
 forms :: (AsHtmlDocument s) => Fold s Form
 forms = html . folding universe . named (only "form") . to toForm . folded
@@ -22,7 +27,7 @@ toForm element = Form <$> action' <*> return fields' <*> return element
   where
     action' =
       element ^. attr "action"
-      >>= parseURIReference . Text.unpack
+      >>= parseURIReference . Text.unpack . unescapeHtmlEntity
 
     fields' = Map.fromList $ do
       input' <- element ^.. folding universe . named (only "input")
@@ -40,7 +45,7 @@ toLink element = Link <$> href' <*> return element
   where
     href' =
       element ^. attr "href"
-      >>= parseURIReference . Text.unpack
+      >>= parseURIReference . Text.unpack . unescapeHtmlEntity
 
 
 domId :: (HasDom s Element) => Fold s Text
