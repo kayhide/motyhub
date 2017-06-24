@@ -14,9 +14,7 @@ import Network.URI
 import Mid.Crawler.Type
 
 
-forms
-  :: (Applicative f, Indexable Int p, Contravariant f, AsHtmlDocument t)
-  => p Form (f Form) -> t -> f t
+forms :: (AsHtmlDocument s) => Fold s Form
 forms = html . folding universe . named (only "form") . to toForm . folded
 
 toForm :: Element -> Maybe Form
@@ -34,9 +32,7 @@ toForm element = Form <$> action' <*> return fields' <*> return element
       return (Text.encodeUtf8 (fromJust key'), value')
 
 
-links
-  :: (Applicative f, Indexable Int p, Contravariant f, AsHtmlDocument t)
-  => p Link (f Link) -> t -> f t
+links :: (AsHtmlDocument s) => Fold s Link
 links = html . folding universe . named (only "a") . to toLink . folded
 
 toLink :: Element -> Maybe Link
@@ -47,17 +43,11 @@ toLink element = Link <$> href' <*> return element
       >>= parseURIReference . Text.unpack
 
 
-domId
-  :: (Applicative f, Contravariant f, HasDom s Element)
-  => (Text -> f Text) -> s -> f s
+domId :: (HasDom s Element) => Fold s Text
 domId = dom . attr "id" . folded
 
-domClass
-  :: (Applicative f, Contravariant f, HasDom s Element)
-  => (Text -> f Text) -> s -> f s
+domClass :: (HasDom s Element) => Fold s Text
 domClass = dom . attr "class" . folded . to Text.words . folded
 
-innerText
-  :: (Applicative f, Contravariant f, HasDom s Element)
-  => (Text -> f Text) -> s -> f s
+innerText :: (HasDom s Element) => Fold s Text
 innerText = dom . folding universe . text . to (Text.unwords . Text.words)
