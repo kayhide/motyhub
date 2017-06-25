@@ -3,6 +3,7 @@ module Mid.Crawler.Lens where
 import Data.Maybe
 import Data.Map (Map)
 import qualified Data.Map as Map
+import Data.String
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Text
@@ -14,13 +15,24 @@ import Text.Xml.Lens
 import Network.URI
 
 import Mid.Crawler.Type
+import Mid.Crawler.DomSelector
 
 
-unescapeHtmlEntity :: Text -> Text
-unescapeHtmlEntity x = ((LazyText.encodeUtf8 . LazyText.fromStrict) x) ^. html . text
+selected :: DomSelector -> Fold Element Element
+selected (DomSelector factors) = folding universe . filtered' factors
+  where
+    filtered' [] = filtered (const True)
+    filtered' (DomName x : xs) = named (only name') . filtered' xs
+      where name' = fromString $ Text.unpack x
+    filtered' (DomId x : xs) = attributed (ix "id" . only x) . filtered' xs
+    filtered' (DomClass x : xs) = attributed (ix "class" . to Text.words . folded . only x) . filtered' xs
 
-forms :: (AsHtmlDocument s) => Fold s Form
-forms = html . folding universe . named (only "form") . to toForm . folded
+
+forms :: Fold Element Form
+forms = selected "form" . _Form
+
+_Form :: Fold Element Form
+_Form = to toForm . folded
 
 toForm :: Element -> Maybe Form
 toForm element = Form <$> action' <*> return fields' <*> return element
@@ -30,15 +42,28 @@ toForm element = Form <$> action' <*> return fields' <*> return element
       >>= parseURIReference . Text.unpack . unescapeHtmlEntity
 
     fields' = Map.fromList $ do
-      input' <- element ^.. folding universe . named (only "input")
-      let key' = input' ^. attr "name"
-          value' = input' ^. attr "value" . folded
-      guard $ isJust key'
-      return (Text.encodeUtf8 (fromJust key'), value')
+      input' <- element ^.. inputs
+      return (Text.encodeUtf8 $ input' ^. key, input' ^. value)
 
 
-links :: (AsHtmlDocument s) => Fold s Link
-links = html . folding universe . named (only "a") . to toLink . folded
+inputs :: Fold Element Input
+inputs = selected "input" . _Input
+
+_Input :: Fold Element Input
+_Input = to toInput . folded
+
+toInput :: Element -> Maybe Input
+toInput element = Input <$> name' <*> return value' <*> return element
+  where
+    name' = element ^. attr "name"
+    value' = element ^. attr "value" . folded
+
+
+links ::Fold Element Link
+links = selected "a" . _Link
+
+_Link ::Fold Element Link
+_Link = to toLink . folded
 
 toLink :: Element -> Maybe Link
 toLink element = Link <$> href' <*> return element
@@ -56,3 +81,7 @@ domClass = dom . attr "class" . folded . to Text.words . folded
 
 innerText :: (HasDom s Element) => Fold s Text
 innerText = dom . folding universe . text . to (Text.unwords . Text.words)
+
+
+unescapeHtmlEntity :: Text -> Text
+unescapeHtmlEntity x = ((LazyText.encodeUtf8 . LazyText.fromStrict) x) ^. html . text

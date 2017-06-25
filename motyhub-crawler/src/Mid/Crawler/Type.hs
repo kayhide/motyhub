@@ -26,6 +26,15 @@ data Form = Form
 makeFields ''Form
 
 
+data Input = Input
+  { _inputKey :: Text
+  , _inputValue :: Text
+  , _inputDom :: Element
+  } deriving (Show, Generic)
+
+makeFields ''Input
+
+
 data Link = Link
   { _linkHref :: URI
   , _linkDom :: Element

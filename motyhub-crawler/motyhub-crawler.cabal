@@ -17,6 +17,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Mid.Crawler.Lib
                      , Mid.Crawler.Type
+                     , Mid.Crawler.DomSelector
                      , Mid.Crawler.Lens
                      , Mid.Crawler.Monad
   build-depends:       base >= 4.7 && < 5
@@ -26,6 +27,7 @@ library
                      , bifunctors
                      , lens
                      , xml-html-conduit-lens
+                     , megaparsec
                      , operational
                      , wreq
                      , network-uri
