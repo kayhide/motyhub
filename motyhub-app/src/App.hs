@@ -23,11 +23,12 @@ import App.Config.Application
 import App.Route
 import App.Monad.Handleable
 import qualified App.Concept.Blog.Handler as Blog
+import qualified App.Concept.Blog.Crawling.Handler as BlogCrawling
 import qualified App.Concept.Article.Handler as Article
 
 
 handlers :: ServerT API Handleable
-handlers = Blog.handlers :<|> Article.handlers
+handlers = Blog.handlers :<|> BlogCrawling.handlers :<|> Article.handlers
 
 
 apiServer :: Config -> Server API

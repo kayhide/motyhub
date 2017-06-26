@@ -26,6 +26,7 @@ library
                      , App.Concept.Blog.Serializer
                      , App.Concept.Blog.Operation
                      , App.Concept.Blog.Handler
+                     , App.Concept.Blog.Crawling.Handler
                      , App.Concept.Article
                      , App.Concept.Article.Serializer
                      , App.Concept.Article.Operation
@@ -45,6 +46,7 @@ library
                      , directory
                      , lens
                      , lens-aeson
+                     , xml-html-conduit-lens
                      , transformers
                      , mtl
                      , natural-transformation
@@ -61,6 +63,8 @@ library
                      , persistable-record
                      , sql-words
                      , transformers-base
+                     , network-uri
+                     , wreq
                      , servant-server
                      , wai
                      , wai-extra

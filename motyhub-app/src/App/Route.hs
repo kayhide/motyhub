@@ -15,6 +15,8 @@ type API =
     :<|> Capture "blog_id" BlogId :> ReqBody '[JSON] BlogForUpdate :> Patch '[JSON] (Entity Blog)
     :<|> Capture "blog_id" BlogId :> DeleteNoContent '[JSON] NoContent
   ) :<|>
+  "blogs" :> Capture "blog_id" BlogId :> "crawling" :> PostAccepted '[JSON] NoContent
+    :<|>
   "blogs" :> Capture "blog_id" BlogId :> "articles" :>
   (      Get '[JSON] [Entity Article]
     :<|> Capture "article_id" ArticleId :> Get '[JSON] (Entity Article)
