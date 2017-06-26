@@ -1,6 +1,7 @@
 module Mid.Crawler.Monad where
 
 import qualified Data.Map as Map
+import qualified Data.Text.Encoding as Text
 import Control.Monad
 import Control.Monad.Operational
 -- import Control.Monad.Trans
@@ -47,7 +48,9 @@ runCrawler' session url = eval session url . view
       >>= runCrawler' session uri' . k
       where
         uri' = form ^. action
-        xs' = uncurry (:=) <$> form ^. fields . to Map.toList
+        xs' = do
+          (k, v) <- form ^. fields . to Map.toList
+          return $ Text.encodeUtf8 k := v
 
     eval session _ (Click link :>>= k) =
       Session.get session (show uri')

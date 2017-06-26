@@ -10,6 +10,7 @@ import qualified Data.Text.Encoding as Text
 import qualified Data.Text.Lazy as LazyText
 import qualified Data.Text.Lazy.Encoding as LazyText
 import Control.Monad
+import Control.Arrow
 import Control.Lens
 import Text.Xml.Lens
 import Network.URI
@@ -41,9 +42,7 @@ toForm element = Form <$> action' <*> return fields' <*> return element
       element ^. attr "action"
       >>= parseURIReference . Text.unpack . unescapeHtmlEntity
 
-    fields' = Map.fromList $ do
-      input' <- element ^.. inputs
-      return (Text.encodeUtf8 $ input' ^. key, input' ^. value)
+    fields' = Map.fromList $ element ^.. inputs . to (view key &&& view value)
 
 
 inputs :: Fold Element Input
@@ -84,4 +83,4 @@ innerText = dom . folding universe . text . to (Text.unwords . Text.words)
 
 
 unescapeHtmlEntity :: Text -> Text
-unescapeHtmlEntity x = ((LazyText.encodeUtf8 . LazyText.fromStrict) x) ^. html . text
+unescapeHtmlEntity x = x ^. to (LazyText.encodeUtf8 . LazyText.fromStrict) . html . text

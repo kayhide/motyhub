@@ -19,7 +19,7 @@ type Response = Wreq.Response Lazy.ByteString
 
 data Form = Form
   { _formAction :: URI
-  , _formFields :: Map ByteString Text
+  , _formFields :: Map Text Text
   , _formDom :: Element
   } deriving (Show, Generic)
 
