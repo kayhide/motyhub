@@ -54,8 +54,12 @@ run' = do
 
     let Just siteUrl = res ^? responseBody . html . selected "#view-site" . links . href
     let Just ext = res ^? responseBody . html . selected "input#file_extension" . _Input . value
+    let Just timezone = res ^? responseBody . html
+                        . selected "#server_offset"
+                        ... attributed (ix "selected" . only "selected") . attr "value" . folded
     -- Debug.traceShow siteUrl $ return ()
     -- Debug.traceShow ext $ return ()
+    -- Debug.traceShow timezone $ return ()
 
     let Just link =
           res ^? responseBody . html . links
