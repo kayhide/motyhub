@@ -33,10 +33,12 @@ library
                      , App.Concept.Article.Handler
                      , App
                      , Dev
+                     , Lib.Movable
   build-depends:       base >= 4.7 && < 5
                      , text
                      , bytestring
                      , inflections
+                     , megaparsec
                      , containers
                      , time
                      , data-default

@@ -1,15 +1,22 @@
 module App.Concept.Blog.Crawling.Handler
   ( handlers
+  , try
   ) where
 
+import Data.Monoid
 import Data.Maybe
 import Data.List
 import qualified Data.Map as Map
 import Data.String
+import Data.Text (Text)
 import qualified Data.Text as Text
+import qualified Data.Text.IO as Text
 import qualified Data.Text.Lazy as LazyText
 import qualified Data.Text.Lazy.Encoding as LazyText
 import qualified Data.Text.Lazy.IO as LazyText
+import Data.Time
+import Data.Aeson
+import Data.Aeson.Lens
 import Text.Xml.Lens
 import Control.Monad
 import Control.Arrow
@@ -21,9 +28,10 @@ import Servant
 
 import Mid.Db.Monad
 import Mid.Crawler.Monad as Crawler
-import Mid.Crawler.Type
+import Mid.Crawler.Type hiding (key)
 import Mid.Crawler.Lens
 
+import Lib.Movable
 import App.Prelude
 import App.Model
 import App.Monad.Handleable
@@ -39,11 +47,11 @@ create' :: BlogId -> Handleable NoContent
 create' blogId = do
   blog' <- runDb $ Blog.lookup blogId
   blog <- verifyPresence blog'
-  liftIO $ runCrawler $ crawling' blog
+  doc <- liftIO $ runCrawler $ crawling' blog
   return NoContent
 
 
-crawling' :: Entity Blog -> Crawler ()
+crawling' :: Entity Blog -> Crawler LazyText.Text
 crawling' (Entity _ record) = do
   let Just url' = parseURI $ Text.unpack $ record ^. hostUrl
       username' = record ^. username
@@ -64,10 +72,13 @@ crawling' (Entity _ record) = do
         . filtered (not . isInfixOf "blog_id=1" . uriQuery . view href)
   res <- click link
 
-  let Just siteUrl = res ^? responseBody . html . selected "#view-site" . links . href
-  let Just ext = res ^? responseBody . html . selected "input#file_extension" . _Input . value
-  -- Debug.traceShow siteUrl $ return ()
-  -- Debug.traceShow ext $ return ()
+  let Just siteUrl =
+        res ^? responseBody . html . selected "#view-site" . links . href
+  let Just ext =
+        res ^? responseBody . html . selected "input#file_extension" . _Input . value
+  let Just timezone =
+        res ^? responseBody . html . selected "#server_offset"
+        ... attributed (ix "selected" . only "selected") . attr "value" . folded
 
   let Just link =
         res ^? responseBody . html . links
@@ -79,5 +90,29 @@ crawling' (Entity _ record) = do
         . filtered ((== Just "export") . Map.lookup "__mode" . view fields)
   res <- submit form
 
-  Debug.trace (res ^. responseBody . to LazyText.decodeUtf8 . to LazyText.unpack) $ return ()
-  return ()
+  -- Debug.trace (res ^. responseBody . to LazyText.decodeUtf8 . to LazyText.unpack) $ return ()
+  return $ LazyText.decodeUtf8 $ res ^. responseBody
+
+
+try :: IO ()
+try = do
+  putStrLn "trying Movable..."
+  doc <- LazyText.readFile "articles.txt"
+  let articles = parseItems doc
+  mapM_ print' articles
+  putStrLn "done."
+  where
+    print' :: Value -> IO ()
+    print' x = do
+      Text.putStrLn $ "title: " <> x ^. key "TITLE" . _String
+      Text.putStrLn $ "basename: " <> x ^. key "BASENAME" . _String
+      Text.putStrLn $ "body: " <> x ^. key "BODY" . _String
+      let zone = hoursToTimeZone 9
+      let t' = x ^? key "DATE" . _JSON :: Maybe LocalTime
+      putStr "date: "
+      print $ t'
+      case t' of
+        Just t -> do
+          putStr "date: "
+          print $ localTimeToUTC zone t
+      Text.putStrLn ""
