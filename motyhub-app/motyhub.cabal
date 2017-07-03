@@ -39,6 +39,7 @@ library
                      , bytestring
                      , inflections
                      , megaparsec
+                     , pretty-simple
                      , containers
                      , time
                      , data-default

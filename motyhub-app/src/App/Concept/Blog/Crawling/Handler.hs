@@ -17,6 +17,7 @@ import qualified Data.Text.Lazy.IO as LazyText
 import Data.Time
 import Data.Aeson
 import Data.Aeson.Lens
+import Data.Default
 import Text.Xml.Lens
 import Control.Monad
 import Control.Arrow
@@ -31,12 +32,14 @@ import Mid.Crawler.Monad as Crawler
 import Mid.Crawler.Type hiding (key)
 import Mid.Crawler.Lens
 
-import Lib.Movable
+import qualified Lib.Movable as Movable
 import App.Prelude
 import App.Model
 import App.Monad.Handleable
 import qualified App.Concept.Blog.Operation as Blog
+import qualified App.Concept.Article.Operation as Article
 import App.Concept.Blog.Serializer
+import App.Concept.Article.Serializer
 
 import Debug.Trace as Debug
 
@@ -48,8 +51,30 @@ create' blogId = do
   blog' <- runDb $ Blog.lookup blogId
   blog <- verifyPresence blog'
   doc <- liftIO $ runCrawler $ crawling' blog
+  articles <- runDb $ Blog.articles_ blog & queryMany
+  let items = Movable.parseItems doc
+      changesets = do
+        x <- toArticleForCreate <$> items
+        let basename' = articleforcreateBasename x
+            a = case basename' of
+              Nothing -> Nothing
+              Just basename'' -> articles ^? folded . filtered ((== basename'') . view basename . entityVal)
+        return (a, (ArticleBlogId =. blogId) : toChangeset x)
+
+  mapM_ createOrUpdate changesets
+
+  runDb $ Blog.update blog []
   return NoContent
 
+toArticleForCreate :: Value -> ArticleForCreate
+toArticleForCreate x = ArticleForCreate
+                       (Just (x ^. key "TITLE" . _String))
+                       (Just (x ^. key "BODY" . _String))
+                       (Just (x ^? key "BASENAME" . _String))
+
+createOrUpdate :: (Maybe (Entity Article), Changeset Article) -> Handleable (Entity Article)
+createOrUpdate (Nothing, changeset) = runDb $ Article.create changeset
+createOrUpdate (Just article, changeset) = runDb $ Article.update article changeset
 
 crawling' :: Entity Blog -> Crawler LazyText.Text
 crawling' (Entity _ record) = do
@@ -98,7 +123,7 @@ try :: IO ()
 try = do
   putStrLn "trying Movable..."
   doc <- LazyText.readFile "articles.txt"
-  let articles = parseItems doc
+  let articles = Movable.parseItems doc
   mapM_ print' articles
   putStrLn "done."
   where

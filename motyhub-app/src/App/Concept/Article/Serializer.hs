@@ -8,6 +8,7 @@ import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Aeson
+import Data.Default
 import Database.Persist
 import GHC.Generics
 
@@ -35,6 +36,8 @@ data ArticleForCreate = ArticleForCreate
   , articleforcreateBasename :: Maybe (Maybe Text)
   } deriving (Eq, Show, Generic)
 
+instance Default ArticleForCreate
+
 instance ToJSON ArticleForCreate where
   toJSON = genericToJSON jsonOptions
 
@@ -54,6 +57,8 @@ data ArticleForUpdate = ArticleForUpdate
   , articleforupdateBody :: Maybe Text
   , articleforupdateBasename :: Maybe (Maybe Text)
   } deriving (Eq, Show, Generic)
+
+instance Default ArticleForUpdate
 
 instance ToJSON ArticleForUpdate where
   toJSON = genericToJSON jsonOptions
