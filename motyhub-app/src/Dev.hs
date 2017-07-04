@@ -29,6 +29,7 @@ import App.Config as Config
 import App.Model
 import qualified App.Concept.Blog as Blog
 import qualified App.Concept.Blog.Operation as Blog
+import qualified App.Concept.Blog.Crawling.Operation as Blog
 import qualified App.Concept.Article as Article
 import qualified App.Concept.Article.Operation as Article
 

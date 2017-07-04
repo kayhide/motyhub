@@ -26,6 +26,7 @@ library
                      , App.Concept.Blog.Serializer
                      , App.Concept.Blog.Operation
                      , App.Concept.Blog.Handler
+                     , App.Concept.Blog.Crawling.Operation
                      , App.Concept.Blog.Crawling.Handler
                      , App.Concept.Article
                      , App.Concept.Article.Serializer
