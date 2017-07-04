@@ -51,6 +51,9 @@ apply updates record = foldr apply' record updates
     add' (PersistDouble x) (PersistDouble y) = PersistDouble (x + y)
     add' _ _ = error "apply failed of inconsistent `Add` update."
 
+isChanging :: (PersistEntity v, Eq v) => Changeset v -> v -> Bool
+isChanging changeset record = record /= apply changeset record
+
 instance ( MonadIO m
          , MonadBaseControl IO m
          , MonadThrow m

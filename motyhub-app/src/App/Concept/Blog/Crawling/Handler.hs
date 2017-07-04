@@ -52,4 +52,7 @@ toArticleForCreate x = ArticleForCreate
 
 createOrUpdate :: (Changeset Article, Maybe (Entity Article)) -> Handleable (Entity Article)
 createOrUpdate (changeset, Nothing) = runDb $ Article.create changeset
-createOrUpdate (changeset, Just article) = runDb $ Article.update article changeset
+createOrUpdate (changeset, Just article) = do
+  if isChanging changeset (entityVal article)
+    then runDb $ Article.update article changeset
+    else return article
