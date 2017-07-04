@@ -6,6 +6,7 @@ import Data.Maybe
 import Data.List
 import Data.Aeson
 import Data.Aeson.Lens
+import Control.Monad
 import Control.Lens
 import Database.Persist
 import Servant
@@ -31,8 +32,8 @@ create' blogId = do
   blog <- verifyPresence blog'
   items <- liftIO $ Blog.crawl blog
   articles <- runDb $ Blog.articles_ blog & queryMany
-  let f = fromMaybe Nothing . articleforcreateBasename
-      g = view basename . entityVal
+  let f = articleforcreateBasename
+      g = Just . view basename . entityVal
       pred x y = f x == g y
       changesets = do
         x <- toArticleForCreate <$> items
@@ -45,9 +46,9 @@ create' blogId = do
 
 toArticleForCreate :: Value -> ArticleForCreate
 toArticleForCreate x = ArticleForCreate
-                       (Just (x ^. key "TITLE" . _String))
-                       (Just (x ^. key "BODY" . _String))
-                       (Just (x ^? key "BASENAME" . _String))
+                       (x ^? key "TITLE" . _String)
+                       (x ^? key "BODY" . _String)
+                       (x ^? key "BASENAME" . _String)
 
 createOrUpdate :: (Changeset Article, Maybe (Entity Article)) -> Handleable (Entity Article)
 createOrUpdate (changeset, Nothing) = runDb $ Article.create changeset

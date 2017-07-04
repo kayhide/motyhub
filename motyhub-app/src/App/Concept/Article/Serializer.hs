@@ -33,7 +33,7 @@ instance FromJSON (Entity Article) where
 data ArticleForCreate = ArticleForCreate
   { articleforcreateTitle :: Maybe Text
   , articleforcreateBody :: Maybe Text
-  , articleforcreateBasename :: Maybe (Maybe Text)
+  , articleforcreateBasename :: Maybe Text
   } deriving (Eq, Show, Generic)
 
 instance Default ArticleForCreate
@@ -55,7 +55,7 @@ data ArticleForUpdate = ArticleForUpdate
   { articleforupdateBlogId :: Maybe BlogId
   , articleforupdateTitle :: Maybe Text
   , articleforupdateBody :: Maybe Text
-  , articleforupdateBasename :: Maybe (Maybe Text)
+  , articleforupdateBasename :: Maybe Text
   } deriving (Eq, Show, Generic)
 
 instance Default ArticleForUpdate

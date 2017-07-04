@@ -36,7 +36,7 @@ share
     blogId    BlogId sql=blog_id
     title     Text
     body      Text
-    basename  Text Maybe
+    basename  Text
     createdAt UTCTime sql=created_at
     updatedAt UTCTime sql=updated_at
 
