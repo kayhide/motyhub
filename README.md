@@ -23,7 +23,7 @@ $ bundle exec rake db:create
 $ bundle exec rake db:schema:load
 ```
 
-### Tips
+#### :bulb:Tips
 
 `bin` に `bundle exec` をラップした `rake` コマンドがある。
 `./bin` を `PATH` の前の方に加えておけば、 `bundle exec` を省いて `rake` できる。
@@ -79,3 +79,36 @@ Repl でよく使うモジュールは `src/Dev.hs` でインポートする。
 ```
 $ stack ghci src/Dev.hs
 ```
+
+## Admin frontend
+
+データベースの内容を直接参照するために、 [PostgREST](https://github.com/begriffs/postgrest) を使う。
+
+```
+$ postgrest --help
+Usage: postgrest FILENAME
+  PostgREST 0.4.2.0 / create a REST API to an existing Postgres database
+...
+
+$ postgrest db/postgrest-development.conf
+Listening on port 8081
+Attempting to connect to the database...
+Connection successful
+```
+
+`motyhub-admin` に移動する。
+
+```
+$ cd motyhub-admin
+```
+
+node パッケージのインストールと開発サーバーの起動をする。
+
+```
+$ yarn
+$ yarn start
+```
+
+#### :bulb:Tips
+
+Mac であれば PostgREST は `brew install postgrest` でインストールできる。
