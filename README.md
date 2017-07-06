@@ -63,8 +63,19 @@ running motyhub on port 8080...
 $ cd motyhub-app
 ```
 
+### Development server
+
 `ghcid` を使ってオートリロードする。
 
 ```
 $ ghcid --test="DevMain.reload"
+```
+
+### Repl
+
+Repl では `src/Dev.hs` をロードする。
+Repl でよく使うモジュールは `src/Dev.hs` でインポートする。
+
+```
+$ stack ghci src/Dev.hs
 ```
