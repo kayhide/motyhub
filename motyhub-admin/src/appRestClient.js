@@ -33,25 +33,27 @@ export default (apiUrl, httpClient = fetchJson) => {
      * @returns {Object} { url, options } The HTTP request parameters
      */
     const convertRESTRequestToHTTP = (type, resource, params) => {
-	      console.log(type);
-	      console.log(params);
-	      console.log(params.filter);
-	      console.log(resource);
+        console.log(type);
+        console.log(params);
+        console.log(params.filter);
+        console.log(resource);
         let url = '';
         const options = {};
-	      options.headers = new Headers();
+        options.headers = new Headers();
+        const token = localStorage.getItem('token');
+        options.headers.set('Authorization', `Bearer ${token}`);
         switch (type) {
         case GET_LIST: {
             const { page, perPage } = params.pagination;
             const { field, order } = params.sort;
-			      options.headers.set('Range-Unit','items');
-			      options.headers.set('Range',((page-1)*perPage) + '-' + ((page * perPage) -1) );
-			      const pf = params.filter;
-		        Object.keys(pf).map(function (b){ pf[b]='ilike.%' + pf[b].replace(/:/,'') + '%' });
+            options.headers.set('Range-Unit','items');
+            options.headers.set('Range',((page-1)*perPage) + '-' + ((page * perPage) -1) );
+            const pf = params.filter;
+            Object.keys(pf).forEach(function (b){ pf[b]='ilike.%' + pf[b].replace(/:/,'') + '%'; });
             let query = {
                 order: field + '.' +  order.toLowerCase()
             };
-		        Object.assign(query,pf);
+            Object.assign(query,pf);
             url = `${apiUrl}/${resource}?${queryParameters(query)}`;
             break;
         }
@@ -63,8 +65,8 @@ export default (apiUrl, httpClient = fetchJson) => {
             break;
         }
         case GET_MANY_REFERENCE: {
-		  let query={};
-			query[params.target]=params.id;
+            let query={};
+            query[params.target]=params.id;
             url = `${apiUrl}/${resource}?${queryParameters(query)}`;
             break;
         }
@@ -75,7 +77,7 @@ export default (apiUrl, httpClient = fetchJson) => {
             break;
         case CREATE:
             url = `${apiUrl}/${resource}`;
-			options.headers.set('Prefer','return=representation');
+            options.headers.set('Prefer','return=representation');
             options.method = 'POST';
             options.body = JSON.stringify(params.data);
             break;
@@ -103,7 +105,7 @@ export default (apiUrl, httpClient = fetchJson) => {
             if (!headers.has('content-range')) {
                 throw new Error('The Content-Range header is missing in the HTTP Response. The simple REST client expects responses for lists of resources to contain this header with the total number of results to build the pagination. If you are using CORS, did you declare Content-Range in the Access-Control-Expose-Headers header?');
             }
-		  const maxInPage = parseInt(headers.get('content-range').split('/')[0].split('-').pop(), 10) +1;
+            const maxInPage = parseInt(headers.get('content-range').split('/')[0].split('-').pop(), 10) +1;
             return {
                 data: json.map(x => x),
                 total: parseInt(headers.get('content-range').split('/').pop(), 10) || maxInPage
