@@ -82,19 +82,27 @@ $ stack ghci src/Dev.hs
 
 ## Admin frontend
 
-データベースの内容を直接参照するために、 [PostgREST](https://github.com/begriffs/postgrest) を使う。
+Admin 用フロントエンドはこれらを使う。
+
+- [PostgREST](https://github.com/begriffs/postgrest)
+- [Admin on REST](https://github.com/marmelab/admin-on-rest)
+
+### PostgREST
+
+確認。
 
 ```
 $ postgrest --help
 Usage: postgrest FILENAME
   PostgREST 0.4.2.0 / create a REST API to an existing Postgres database
 ...
-
-$ postgrest db/postgrest-development.conf
-Listening on port 8081
-Attempting to connect to the database...
-Connection successful
 ```
+
+#### :bulb:Tips
+
+Mac であれば PostgREST は `brew install postgrest` でインストールできる。
+
+### Admin on REST
 
 `motyhub-admin` に移動する。
 
@@ -106,9 +114,13 @@ node パッケージのインストールと開発サーバーの起動をする
 
 ```
 $ yarn
-$ yarn start
 ```
 
-#### :bulb:Tips
+### 起動
 
-Mac であれば PostgREST は `brew install postgrest` でインストールできる。
+foreman を使って、 PostgREST と Admin on REST をまとめて起動する。
+
+```
+$ cd motyhub-admin
+$ foreman start
+```
