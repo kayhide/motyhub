@@ -1,0 +1,2 @@
+api: postgrest ../db/postgrest-development.conf
+admin: yarn start
